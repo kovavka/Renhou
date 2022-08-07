@@ -1,0 +1,2 @@
+# Renhou
+Majhong training
