@@ -1,12 +1,14 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import {Button} from "../../common/react/components/Button";
+import {Button} from "../../common/react/components/button";
+import {Table} from "../../common/canvas/table";
 
 function App() {
   return (
-    <div className="App">
-      <Button />
+    <div>
+       <Table />
+      {/*<Button />*/}
     </div>
   );
 }
