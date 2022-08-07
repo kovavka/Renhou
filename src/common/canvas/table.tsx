@@ -1,6 +1,6 @@
 import React, {CSSProperties, MouseEvent, useEffect, useRef} from "react";
 import {colors} from "../design-tokens/colors";
-import {Tile} from "./components/Tile";
+import {Tile} from "./components/tile/Tile";
 import {Rectangle} from "./core/Rectangle";
 
 const STYLES: CSSProperties = {
@@ -37,9 +37,9 @@ export const Table: React.FunctionComponent = () => {
                 const tile1 = new Tile(context,10, 10)
                 tile1.render()
 
-                const tile2 = new Tile(context,10, 470)
-                tile2.isFallen = true
-                tile2.render()
+                // const tile2 = new Tile(context,10, 470)
+                // tile2.isFallen = true
+                // tile2.render()
             }
         }
     }, [ref.current])

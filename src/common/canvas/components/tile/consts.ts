@@ -1,0 +1,7 @@
+
+export const TILE_DEFAULT_WIDTH = 380
+export const TILE_DEFAULT_HEIGHT = 480
+export const TILE_RADIUS = 24
+
+export const TILE_BACK_DEFAULT_THICKNESS = 36
+export const TILE_FRONT_DEFAULT_THICKNESS = 80

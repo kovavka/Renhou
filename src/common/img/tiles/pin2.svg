@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="300" height="400">
+  <g transform="translate(512.082 -162.704) scale(.76584)">
+    <circle cx="-472.783" cy="341.256" r="107.567" fill="#fff" stroke="#000"  stroke-width="17.217" stroke-linejoin="round"/>
+    <circle cx="-472.783" cy="341.627" r="87.813" fill="#000" />
+    <path id="pin2_a" transform="matrix(.10477 0 0 .08588 -506.329 359.108)"
+          fill="none" stroke="#fff"  stroke-width="125.71" stroke-linecap="round" stroke-linejoin="round"
+            d="M-93.33-74.125a163.919 163.919 0 0 1-224.594-13.082 163.919 163.919 0 0 1 0-224.975A163.919 163.919 0 0 1-93.33-325.263"/>
+    <use xlink:href="#pin2_a" id="pin2_b" transform="rotate(-60 -472.858 342.066)" width="100%" height="100%"/>
+    <use xlink:href="#pin2_b" id="pin2_c" transform="rotate(-60 -473.886 342.721)" width="100%" height="100%"/>
+    <use xlink:href="#pin2_c" id="pin2_d" transform="rotate(-60 -473.886 342.721)" width="100%" height="100%"/>
+    <use xlink:href="#pin2_d" id="pin2_e" transform="rotate(-60 -473.886 342.721)" width="100%" height="100%"/>
+    <use xlink:href="#pin2_e" transform="rotate(-60 -473.886 342.721)" width="100%" height="100%"/>
+    <circle cx="-472.931" cy="341.516" r="18.188" fill="none" stroke="#fff"  stroke-width="12.286" stroke-linejoin="round"/>
+  </g>
+  <g transform="translate(512.082 39.796) scale(.76584)">
+    <circle r="107.567" cy="341.256" cx="-472.783" fill="#fff" stroke="#000"  stroke-width="17.217" stroke-linejoin="round"/>
+    <circle r="87.813" cy="341.627" cx="-472.783" fill="#000" />
+    <path d="M-93.33-74.125a163.919 163.919 0 0 1-224.594-13.082 163.919 163.919 0 0 1 0-224.975A163.919 163.919 0 0 1-93.33-325.263" fill="none" stroke="#fff" />
+    <use height="100%" width="100%" transform="rotate(-60 -472.858 342.066)" xlink:href="#pin2_a"/>
+    <use height="100%" width="100%" transform="rotate(-60 -473.886 342.721)" xlink:href="#pin2_b"/>
+    <use height="100%" width="100%" transform="rotate(-60 -473.886 342.721)" xlink:href="#pin2_c"/>
+    <use height="100%" width="100%" transform="rotate(-60 -473.886 342.721)" xlink:href="#pin2_d"/>
+    <use height="100%" width="100%" transform="rotate(-60 -473.886 342.721)" xlink:href="#pin2_e"/>
+    <circle r="18.188" cy="341.516" cx="-472.931" fill="none" stroke="#fff"  stroke-width="12.286" stroke-linejoin="round"/>
+  </g>
+</svg>
