@@ -1,9 +1,11 @@
 import React, {CSSProperties, MouseEvent, useEffect, useRef} from "react";
 import {colors} from "../design-tokens/colors";
+import {Tile} from "./components/Tile";
+import {Rectangle} from "./core/Rectangle";
 
 const STYLES: CSSProperties = {
-    // width: '100vw',
-    // height: '100vh',
+    width: '100vw',
+    height: '100vh',
     position: 'absolute',
     zIndex: '1'
 }
@@ -30,13 +32,14 @@ export const Table: React.FunctionComponent = () => {
 
                 context.beginPath();
                 context.fillStyle = colors.tableBackground
-                context.fillRect(0, 0, width, height);
+                context.fillRect(0, 0, width, height)
 
+                const tile1 = new Tile(context,10, 10)
+                tile1.render()
 
-                context.beginPath();
-                context.fillStyle = 'blue';
-                context.fillRect(10, 20, 100, 200)
-                context.closePath();
+                const tile2 = new Tile(context,10, 470)
+                tile2.isFallen = true
+                tile2.render()
             }
         }
     }, [ref.current])
