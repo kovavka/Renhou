@@ -9,8 +9,10 @@
     "@types/node": "^16.7.13",
     "@types/react": "^18.0.0",
     "@types/signals": "^1.0.1",
+    "@types/three": "^0.143.0",
     "react": "^18.2.0",
     "signals": "^1.0.0",
+    "three": "^0.143.0",
     "typescript": "^4.4.2"
   }
 }
