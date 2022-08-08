@@ -1,5 +1,5 @@
 import {Tile} from "./Tile";
-import {Side} from "../../components/tile/Side";
+import {Side} from "./Side";
 
 export enum SetType {
     PON,

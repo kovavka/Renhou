@@ -19,5 +19,9 @@ export abstract class CanvasObject {
         }
     }
 
+    get rect(): [number, number, number, number] {
+        return [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height]
+    }
+
     abstract render(): void
 }

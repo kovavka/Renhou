@@ -12,7 +12,7 @@ export class SpriteLoaderImpl implements ISpriteLoader {
         return this._allLoaded
     }
 
-    getTile(type: SuitType, value: number): HTMLImageElement {
+    getTileImage(type: SuitType, value: number): HTMLImageElement {
         return this.tiles[type][value - 1]
     }
 

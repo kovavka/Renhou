@@ -1,15 +1,15 @@
 import {ICanvasService} from "./ICanvasService";
 import {Context} from "../../core/Context";
-import {colors} from "../../../design-tokens/colors";
 import {TileView} from "../../components/tile/TileView";
-import {Side} from "../../components/tile/Side";
+import {Side} from "../../core/game-types/Side";
 import signals from "signals";
 import {SpriteLoader} from "../sprite-loader/SpriteLoader";
+import {TableView} from "../../components/table/TableView";
+import {GameService} from "../game/GameService";
+import {EdgeType} from "../../components/tile/EdgeType";
 import {SuitType} from "../../core/game-types/SuitType";
 
 export class CanvasServiceImpl implements ICanvasService {
-    private isReady = false
-
     private context: Context | undefined
     private canvas: HTMLCanvasElement | undefined
     private _width: number = 0
@@ -56,12 +56,50 @@ export class CanvasServiceImpl implements ICanvasService {
     private render(): void {
         const {canvas, context} = this
         if (this.canRender() && context !== undefined && canvas !== undefined) {
-            context.beginPath();
-            context.fillStyle = colors.tableBackground
-            context.fillRect(0, 0, this.width, this.height)
+            context.setTransform(1, 0, 0, 1, 0, 0)
+            const table = new TableView(context, this.width, this.height)
+            table.render()
 
-            const tile1 = new TileView(context, SuitType.MANZU, 9, 100, 100, Side.LEFT, false)
-            tile1.render()
+            const {gameState} = GameService.instance
+            if (gameState !== undefined) {
+
+                let x = 10
+                let y = 10
+
+                const tileOffset = 4
+
+                gameState.topHand.tiles.forEach(tile => {
+                    const tileView = new TileView(context, tile, x, y, Side.TOP, EdgeType.SIDE)
+                    tileView.render()
+                    x += tileView.bounds.width + tileOffset
+                })
+
+                x = 10
+                y = 80
+
+                gameState.leftHand.tiles.forEach(tile => {
+                    const tileView = new TileView(context, tile, x, y, Side.LEFT, EdgeType.SIDE)
+                    tileView.render()
+                    y += tileView.bounds.height + tileOffset
+                })
+
+                y += 40
+                gameState.bottomHand.tiles.forEach(tile => {
+                    const tileView = new TileView(context, tile, x, y, Side.BOTTOM, EdgeType.FRONT)
+                    tileView.render()
+                    x += tileView.bounds.width + tileOffset
+                })
+
+                y = 80
+
+                gameState.rightHand.tiles.forEach(tile => {
+                    const tileView = new TileView(context, tile, x, y, Side.RIGHT, EdgeType.SIDE)
+                    tileView.render()
+                    y += tileView.bounds.height + tileOffset
+                })
+
+            }
+
         }
     }
 }
