@@ -1,8 +1,8 @@
 import React, {CSSProperties, MouseEvent, useEffect, useRef} from "react";
 import {colors} from "../design-tokens/colors";
-import {Tile} from "./components/tile/Tile";
+import {TileView} from "./components/tile/TileView";
 import {Rectangle} from "./core/Rectangle";
-import {Orientation} from "./components/tile/Orientation";
+import {Side} from "./components/tile/Side";
 import {CanvasService} from "./services/canvas/CanvasService";
 
 const STYLES: CSSProperties = {

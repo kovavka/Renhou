@@ -1,5 +1,5 @@
 import {ISpriteLoader} from "./ISpriteLoader";
-import {SuitType} from "../../core/SuitType";
+import {SuitType} from "../../core/game-types/SuitType";
 
 type TileLoadType = {img: HTMLImageElement, type: SuitType, value: number}
 

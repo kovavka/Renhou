@@ -1,4 +1,4 @@
-export enum Orientation {
+export enum Side {
     LEFT,
     RIGHT,
     TOP,

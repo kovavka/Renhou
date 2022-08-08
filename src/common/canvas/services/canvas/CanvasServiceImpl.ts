@@ -1,11 +1,11 @@
 import {ICanvasService} from "./ICanvasService";
 import {Context} from "../../core/Context";
 import {colors} from "../../../design-tokens/colors";
-import {Tile} from "../../components/tile/Tile";
-import {Orientation} from "../../components/tile/Orientation";
+import {TileView} from "../../components/tile/TileView";
+import {Side} from "../../components/tile/Side";
 import signals from "signals";
 import {SpriteLoader} from "../sprite-loader/SpriteLoader";
-import {SuitType} from "../../core/SuitType";
+import {SuitType} from "../../core/game-types/SuitType";
 
 export class CanvasServiceImpl implements ICanvasService {
     private isReady = false
@@ -60,7 +60,7 @@ export class CanvasServiceImpl implements ICanvasService {
             context.fillStyle = colors.tableBackground
             context.fillRect(0, 0, this.width, this.height)
 
-            const tile1 = new Tile(context, SuitType.MANZU, 9, 10, 10, Orientation.BOTTOM, false)
+            const tile1 = new TileView(context, SuitType.MANZU, 9, 100, 100, Side.LEFT, false)
             tile1.render()
         }
     }
