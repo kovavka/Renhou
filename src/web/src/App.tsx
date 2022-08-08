@@ -1,16 +1,23 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect} from 'react';
 import './App.css';
-import {Button} from "../../common/react/components/button";
-import {Table} from "../../common/canvas/table";
+import {MainCanvas} from "../../common/canvas/mainCanvas";
+import {CanvasService} from "../../common/canvas/services/canvas/CanvasService";
+
+function onResize() {
+    CanvasService.instance.updateSize(window.innerWidth, window.innerHeight)
+}
 
 function App() {
-  return (
-    <div>
-       <Table />
-      {/*<Button />*/}
-    </div>
-  );
+    useEffect(() => {
+        onResize()
+        window.addEventListener('resize', onResize)
+    })
+
+    return (
+        <div>
+            <MainCanvas />
+        </div>
+    );
 }
 
 export default App;

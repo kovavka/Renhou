@@ -4,6 +4,4 @@ export const colors = {
     tableBackground: green1,
     tileFront: white,
     tileBack: yellow1,
-    tileFrontShadow: gray1,
-    tileBackShadow: yellow2,
 }

@@ -1,42 +1,70 @@
 import {CanvasObject} from "../../core/CanvasObject";
-import {colors} from "../../../design-tokens/colors";
 import {Context} from "../../core/Context";
 import {Rectangle} from "../../core/Rectangle";
-import {makeRoundRect} from "../../utils/drawing/roundRect";
-import man1 from "../../../img/tiles/man1.svg";
-import {ICanvasObjectView} from "../../core/ICanvasObjectView";
-import {TileStraightView} from "./TileStraightView";
-import {Direction, Orientation} from "./Orientation";
-import {TileSideView} from "./TileSideView";
+import {Orientation} from "./Orientation";
+import {drawRoundRect} from "../../utils/drawing/roundRect";
+import {drawImageRotated} from "../../utils/drawing/image";
+import sou9 from "../../../img/tiles/sou9.svg";
+import {colors} from "../../../design-tokens/colors";
+import {SpriteLoader} from "../../services/sprite-loader/SpriteLoader";
+import {SuitType} from "../../core/SuitType";
 
-const WIDTH = 300
+const SIDE_A = 480
+const SIDE_B = 380
+const RADIUS = 24
 
-const HEIGHT_FRONT = 420
-const HEIGHT_SHADOW = 17
-const HEIGHT_BACK = 7
+const IMG_WIDTH = 300
+const IMG_HEIGHT = 400
 
+/**
+ * @return [width, height]
+ */
+function getSize(orientation: Orientation): [number, number] {
+    if ([Orientation.TOP, Orientation.BOTTOM].includes(orientation)) {
+        return [SIDE_A, SIDE_B]
+    }
 
-const HEIGHT = HEIGHT_FRONT + HEIGHT_SHADOW + HEIGHT_BACK
-
+    return [SIDE_B, SIDE_A]
+}
 
 export class Tile extends CanvasObject {
-    isHidden: boolean = true
-    isFallen: boolean = false
-    direction: Orientation = Orientation.LEFT
+    private _isHidden: boolean
+    private _orientation: Orientation
+    private _type: SuitType
+    private _value: number
 
-    private view: ICanvasObjectView
+    constructor(context: Context, type: SuitType, value: number, x: number, y: number, orientation: Orientation, isHidden: boolean) {
+        const [height, width] = getSize(orientation)
+        super(context, new Rectangle(x, y, width, height));
 
-    constructor(context: Context, x: number, y: number) {
-        super(context, new Rectangle(x, y, WIDTH, HEIGHT));
+        this._isHidden = isHidden
+        this._orientation = orientation
+        this._type = type
+        this._value = value
+    }
 
-        if (this.direction === Orientation.BOTTOM || this.direction === Orientation.TOP) {
-            this.view = new TileStraightView(context, this.bounds.tolLeft, this.isHidden)
+    set isHidden(value: boolean) {
+        this._isHidden = value
+    }
+
+    set orientation(value: Orientation) {
+        this._orientation = value
+        this.updateSize()
+    }
+
+    render(): void {
+        if (this._isHidden) {
+            drawRoundRect(this.context, colors.tileBack, this.bounds, RADIUS)
         } else {
-            this.view = new TileSideView(context, this.bounds.tolLeft)
+            drawRoundRect(this.context, colors.tileFront, this.bounds, RADIUS)
+
+            const img = SpriteLoader.instance.getTile(this._type, this._value)
+            drawImageRotated(this.context, img, IMG_WIDTH, IMG_HEIGHT, this.bounds, this._orientation)
         }
     }
 
-    render() {
-        this.view.render()
+    private updateSize(): void {
+        const [height, width] = getSize(this._orientation)
+        this.bounds = new Rectangle(this.position.x, this.position.y, width, height)
     }
 }
