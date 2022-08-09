@@ -12,4 +12,8 @@ export class TableView extends CanvasObject {
         this.context.fillStyle = colors.tableBackground
         this.context.fillRect(...this.rect)
     }
+
+    clickHandler(): void {
+
+    }
 }

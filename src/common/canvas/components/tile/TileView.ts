@@ -59,14 +59,16 @@ export class TileView extends CanvasObject {
     private _side: Side
     private _tile: Tile
     private _edge: EdgeType
+    private _clickHandler: ((tile: Tile) => void) | undefined
 
-    constructor(context: Context, tile: Tile, x: number, y: number, side: Side, edge: EdgeType) {
+    constructor(context: Context, tile: Tile, x: number, y: number, side: Side, edge: EdgeType, clickHandler?: (tile: Tile) => void) {
         const [width, height] = getSize(side, edge, SCALE)
         super(context, new Rectangle(x, y, width, height));
 
         this._edge = edge
         this._side = side
         this._tile = tile
+        this._clickHandler = clickHandler
     }
 
     set side(value: Side) {
@@ -111,5 +113,10 @@ export class TileView extends CanvasObject {
     private updateSize(): void {
         const [height, width] = getSize(this._side, this._edge, SCALE)
         this.bounds = new Rectangle(this.position.x, this.position.y, width, height)
+    }
+
+
+    clickHandler(): void {
+        this._clickHandler?.(this._tile)
     }
 }

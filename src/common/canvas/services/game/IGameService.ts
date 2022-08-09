@@ -4,6 +4,8 @@ import {Hand} from "../../core/game-types/Hand";
 import {Discard} from "../../core/game-types/Discard";
 import {Side} from "../../core/game-types/Side";
 import {GameTurn} from "../../core/game-types/GameTurn";
+import signals from "signals";
+import {DrawTile} from "../../core/game-types/DrawTile";
 
 export type GameState = {
     liveWall: Tile[]
@@ -25,5 +27,8 @@ export type GameState = {
 
 export interface IGameService {
     readonly gameState: GameState | undefined
+    stateChanged: signals.Signal<GameState>
     start(): void
+    handTileClick(tile: Tile): void
+    drawTileClick(tile: Tile): void
 }

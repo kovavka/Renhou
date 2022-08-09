@@ -24,4 +24,6 @@ export abstract class CanvasObject {
     }
 
     abstract render(): void
+
+    abstract clickHandler(): void
 }

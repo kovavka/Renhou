@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 import {MainCanvas} from "../../common/canvas/mainCanvas";
 import {CanvasService} from "../../common/canvas/services/canvas/CanvasService";
@@ -9,16 +9,23 @@ function onResize() {
 }
 
 function App() {
+    const [gameStarted, setGameStarted] = useState(false)
     useEffect(() => {
         onResize()
         window.addEventListener('resize', onResize)
-
-        GameService.instance.start()
     })
+
+    useEffect(() => {
+        if (gameStarted) {
+            GameService.instance.start()
+        }
+    }, [gameStarted])
 
     return (
         <div>
-            <MainCanvas />
+            {gameStarted && <MainCanvas />}
+            {!gameStarted && <button onClick={() => setGameStarted(true)}>start game</button>}
+
         </div>
     );
 }
