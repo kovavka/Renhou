@@ -28,7 +28,7 @@ export class TableContainer {
             posX +=  tileView.bounds.width + DRAW_TILE_OFFSET
         }
 
-        gameState.topHand.tiles.forEach(tile => {
+        gameState.hands[Side.TOP].tiles.forEach(tile => {
             const tileView = new TileView(context, tile, posX, y, scale, Side.TOP, EdgeType.SIDE)
             tileView.render()
             gameObjects.push(tileView)
@@ -39,7 +39,7 @@ export class TableContainer {
 
     private static renderLeft(context: Context, gameState: GameState, gameObjects: CanvasObject[], x: number, y: number, scale: number): void {
         let posY = y
-        gameState.leftHand.tiles.forEach(tile => {
+        gameState.hands[Side.LEFT].tiles.forEach(tile => {
             const tileView = new TileView(context, tile, x, posY, scale, Side.LEFT, EdgeType.SIDE)
             tileView.render()
             gameObjects.push(tileView)
@@ -71,7 +71,7 @@ export class TableContainer {
             posY += tileView.bounds.height + DRAW_TILE_OFFSET
         }
 
-        gameState.rightHand.tiles.forEach(tile => {
+        gameState.hands[Side.RIGHT].tiles.forEach(tile => {
             const tileView = new TileView(context, tile, posX, posY, scale, Side.RIGHT, EdgeType.SIDE)
             tileView.render()
             gameObjects.push(tileView)
@@ -84,17 +84,14 @@ export class TableContainer {
         const [, height] = getTileSize(Side.BOTTOM, EdgeType.FRONT, scale)
         const posY = screenHeight - bottomSideOffset - height
 
-        let actualWidth = 0
-
         let posX = x
-        gameState.bottomHand.tiles.forEach(tile => {
+        gameState.hands[Side.BOTTOM].tiles.forEach(tile => {
             const handTileClick = () => MahjongService.instance.handTileClick(tile)
             const tileView = new TileView(context, tile, posX, posY, scale, Side.BOTTOM, EdgeType.FRONT, handTileClick)
             tileView.render()
             gameObjects.push(tileView)
 
             posX += tileView.bounds.width + TILE_OFFSET
-            actualWidth += tileView.bounds.width + TILE_OFFSET
         })
 
         posX += -TILE_OFFSET + DRAW_TILE_OFFSET
@@ -103,9 +100,6 @@ export class TableContainer {
             const tileView = new TileView(context, gameState.currentTurn.drawTile, posX, posY, scale, Side.BOTTOM, EdgeType.FRONT, drawTileClick)
             tileView.render()
             gameObjects.push(tileView)
-
-            actualWidth += tileView.bounds.width + DRAW_TILE_OFFSET -TILE_OFFSET
-            console.log(actualWidth, posX + tileView.bounds.width - x)
         }
     }
 

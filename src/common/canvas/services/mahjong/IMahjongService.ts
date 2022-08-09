@@ -10,14 +10,10 @@ export type GameState = {
     liveWall: Tile[]
     deadWall: DeadWallTile[]
     replacementTiles: Tile[]
-    bottomHand: Hand
-    leftHand: Hand
-    rightHand: Hand
-    topHand: Hand
-    bottomDiscard: Discard
-    leftDiscard: Discard
-    rightDiscard: Discard
-    topDiscard: Discard
+
+    hands: {[side in Side]: Hand}
+    discards: {[side in Side]: Discard}
+
     currentDealer: Side
     // lastTurn: GameTurn | undefined
     currentTurn: GameTurn

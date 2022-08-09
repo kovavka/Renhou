@@ -9,6 +9,10 @@ import {sortTiles} from "../../utils/tile/sortTiles";
 import {getNextSide} from "../../utils/tile/prevNextSide";
 import signals from "signals";
 import {Tile} from "../../core/game-types/Tile";
+import {DiscardTile} from "../../core/game-types/Discard";
+import {generateNewGame} from "./utils/generateNewGame";
+
+const BOT_THINKING_TIMEOUT = 1000
 
 export class MahjongServiceImpl implements IMahjongService {
     gameState: GameState | undefined
@@ -16,168 +20,147 @@ export class MahjongServiceImpl implements IMahjongService {
     stateChanged: signals.Signal<GameState> = new signals.Signal()
 
     start(): void {
-        this.initState()
+        const newState = generateNewGame()
+        this.updateState(newState)
 
-        console.log('turn', Side[this.gameState?.currentTurn.side ?? 8])
 
-        setTimeout(() => {
-            this.tryRunBotTurn()
-        }, 1000)
+        this.tryRunBotTurn(newState)
     }
 
     handTileClick(tile: Tile): void {
-        if (this.gameState === undefined) {
+        const {gameState} = this
+        if (gameState === undefined) {
             return
         }
 
-        const {currentTurn, liveWall, bottomHand} = this.gameState
-        const {side, drawTile} = currentTurn
+        const {currentTurn: {side}} = gameState
 
-        if (side !== Side.BOTTOM || liveWall.length === 0) {
+        if (side !== Side.BOTTOM) {
             // we can highlight tile here
             return
         }
-        bottomHand.tiles = bottomHand.tiles.filter(x => x !== tile)
-        bottomHand.tiles.push(drawTile)
-        bottomHand.tiles = sortTiles(bottomHand.tiles)
 
-        this.gameState.currentTurn = this.prepareNextTurn(side, liveWall)
-        this.stateChanged.dispatch(this.gameState)
-
-        this.tryRunBotTurn()
+        const newState = this.discardTileFromHand(gameState, tile)
+        this.finishTurn(newState)
     }
 
     drawTileClick(): void {
-        if (this.gameState === undefined) {
+        const {gameState} = this
+        if (gameState === undefined) {
             return
         }
 
-        const {currentTurn, liveWall} = this.gameState
+        const {currentTurn} = gameState
         const {side} = currentTurn
 
-        if (side !== Side.BOTTOM || liveWall.length === 0) {
+        if (side !== Side.BOTTOM) {
             // we can highlight tile here
             return
         }
 
-        this.gameState.currentTurn = this.prepareNextTurn(side, liveWall)
-        this.stateChanged.dispatch(this.gameState)
+        const newState = this.discardDrawTile(gameState)
 
-        this.tryRunBotTurn()
+        this.finishTurn(newState)
     }
 
-    private prepareNextTurn(side: Side, liveWall: Tile[]): GameTurn {
-        return {
-            side: getNextSide(side),
-            discard: undefined,
-            riichiAttempt: false,
-            drawTile: {
-                ...liveWall.shift()!,
-                fromDeadWall: false,
-            },
-        }
-    }
+    private finishTurn(gameState: GameState) {
+        // todo check if bot wants to make a call
 
-    private tryRunBotTurn() {
-        if (this.gameState === undefined) {
+        if (gameState.liveWall.length === 0) {
+            // finish game
             return
         }
 
-        const {currentTurn, liveWall} = this.gameState
+        const newState = this.moveTurnToNext(gameState)
+
+        this.updateState(newState)
+
+        this.tryRunBotTurn(newState)
+    }
+
+    private moveTurnToNext(gameState: GameState): GameState {
+        return {
+            ...gameState,
+            liveWall: gameState.liveWall.slice(1),
+            currentTurn: {
+                side: getNextSide(gameState.currentTurn.side),
+                discard: undefined,
+                riichiAttempt: false,
+                drawTile: {
+                    ...gameState.liveWall[0],
+                    fromDeadWall: false,
+                },
+            }
+        }
+    }
+
+    private tryRunBotTurn(gameState: GameState) {
+        const {currentTurn} = gameState
         const {side} = currentTurn
-        if (side !== Side.BOTTOM && liveWall.length !== 0) {
-            this.gameState.currentTurn = this.prepareNextTurn(side, liveWall)
-
-            console.log('turn', Side[this.gameState?.currentTurn.side ?? 8])
-
-            this.stateChanged.dispatch(this.gameState)
+        if (side !== Side.BOTTOM) {
+            // todo choose tile to discard
+            const newState = this.discardDrawTile(gameState)
 
             setTimeout(() => {
-                this.tryRunBotTurn()
-            }, 5000)
+                this.finishTurn(newState)
+            }, BOT_THINKING_TIMEOUT)
         }
     }
 
-    private initState(): void {
-        const wall = generateWall()
-
-        const bottomTiles = wall.splice(0, 13)
-        const leftTiles = wall.splice(0, 13)
-        const rightTiles = wall.splice(0, 13)
-        const topTiles = wall.splice(0, 13)
-
-        const bottomHand: Hand = {
-            tiles: sortTiles(bottomTiles),
-            openMelds: [],
-            riichi: false,
-        }
-        const leftHand: Hand = {
-            tiles: sortTiles(leftTiles),
-            openMelds: [],
-            riichi: false,
-        }
-        const rightHand: Hand = {
-            tiles: sortTiles(rightTiles),
-            openMelds: [],
-            riichi: false,
-        }
-        const topHand: Hand = {
-            tiles: sortTiles(topTiles),
-            openMelds: [],
-            riichi: false,
-        }
-
-        const dealerSide = Math.floor(Math.random() * 4) as Side
-
-        const drawTile: DrawTile = {
-            ...wall.shift()!,
-            fromDeadWall: false,
-        }
-
-        const currentTurn: GameTurn = {
-            side: dealerSide,
-            discard: undefined,
-            riichiAttempt: false,
-            drawTile,
-        }
-
-        const tilesForDeadWall = wall.splice(0, 14)
-        const deadWall: DeadWallTile[] = tilesForDeadWall.map((value, index) => ({
-            ...value,
-            isHidden: index !== 5
-        }))
-
-        const replacementTiles = deadWall.slice(0, 4)
-
-
-        this.gameState = {
-            liveWall: wall,
-            deadWall,
-            replacementTiles,
-            bottomHand,
-            leftHand,
-            rightHand,
-            topHand,
-            bottomDiscard: {
-                tiles: [],
-                riichiTile: undefined,
-            },
-            leftDiscard: {
-                tiles: [],
-                riichiTile: undefined,
-            },
-            rightDiscard: {
-                tiles: [],
-                riichiTile: undefined,
-            },
-            topDiscard: {
-                tiles: [],
-                riichiTile: undefined,
-            },
-
-            currentDealer: dealerSide,
-            currentTurn,
-        }
-        this.stateChanged.dispatch(this.gameState)
+    private updateState(gameState: GameState) {
+        console.log(gameState)
+        this.gameState = gameState
+        this.stateChanged.dispatch(gameState)
     }
+
+    private discardTileFromHand(gameState: GameState, tile: Tile): GameState {
+        const {currentTurn, hands} = gameState
+        const {side, drawTile} = currentTurn
+
+        const currentHand = hands[side]
+
+        const newHandTiles = currentHand.tiles.filter(x => x !== tile)
+        newHandTiles.push({
+            type: drawTile.type,
+            value: drawTile.value,
+        })
+
+        return {
+            ...gameState,
+            hands: {
+                ...hands,
+                [side]: {
+                    ...currentHand,
+                    tiles: sortTiles(newHandTiles),
+                }
+            },
+            currentTurn: {
+                ...currentTurn,
+                discard: {
+                    ...tile,
+                    justDrawn: false,
+                }
+
+            }
+        }
+    }
+
+    private discardDrawTile(gameState: GameState): GameState {
+        const {currentTurn} = gameState
+        const {drawTile} = currentTurn
+
+        return {
+            ...gameState,
+            currentTurn: {
+                ...currentTurn,
+                discard: {
+                    type: drawTile.type,
+                    value: drawTile.value,
+                    justDrawn: false,
+                }
+
+            }
+        }
+    }
+
 }
