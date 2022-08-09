@@ -1,9 +1,9 @@
 import React, {CSSProperties, MouseEvent, useEffect, useRef} from "react";
-import {colors} from "../design-tokens/colors";
+import {colors} from "../../design-tokens/colors";
 import {TileView} from "./components/tile/TileView";
-import {Rectangle} from "./core/Rectangle";
-import {Side} from "./core/game-types/Side";
-import {CanvasService} from "./services/canvas/CanvasService";
+import {Rectangle} from "../core/Rectangle";
+import {Side} from "../core/game-types/Side";
+import {CanvasService} from "../services/canvas/CanvasService";
 
 const STYLES: CSSProperties = {
     width: '100vw',
@@ -21,6 +21,7 @@ export const MainCanvas: React.FunctionComponent = () => {
 
     useEffect(() => {
         if (ref.current) {
+            console.log('render')
             CanvasService.instance.updateCanvas(ref.current)
         }
 

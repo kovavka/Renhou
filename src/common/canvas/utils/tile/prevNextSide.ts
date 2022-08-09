@@ -1,19 +1,31 @@
 import {Side} from "../../core/game-types/Side";
 
 export function getNextSide(side: Side): Side {
-    let nextSide = side + 1
-    if (nextSide > 3) {
-        nextSide = 0
+    switch (side) {
+        case Side.TOP:
+            return Side.LEFT
+        case Side.LEFT:
+            return Side.BOTTOM
+        case Side.BOTTOM:
+            return Side.RIGHT
+        case Side.RIGHT:
+            return Side.TOP
+        default:
+            throw new Error('unknown tile type')
     }
-
-    return nextSide
 }
 
 export function getPrevSide(side: Side): Side {
-    let nextSide = side - 1
-    if (nextSide < 0) {
-        nextSide = 3
+    switch (side) {
+        case Side.TOP:
+            return Side.RIGHT
+        case Side.LEFT:
+            return Side.TOP
+        case Side.BOTTOM:
+            return Side.LEFT
+        case Side.RIGHT:
+            return Side.BOTTOM
+        default:
+            throw new Error('unknown tile type')
     }
-
-    return nextSide
 }

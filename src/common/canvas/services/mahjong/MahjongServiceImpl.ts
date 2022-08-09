@@ -1,4 +1,4 @@
-import {GameState, IGameService} from "./IGameService";
+import {GameState, IMahjongService} from "./IMahjongService";
 import {Hand} from "../../core/game-types/Hand";
 import {DeadWallTile} from "../../core/game-types/DeadWallTile";
 import {generateWall} from "../../utils/tile/wallGenerator";
@@ -10,7 +10,7 @@ import {getNextSide} from "../../utils/tile/prevNextSide";
 import signals from "signals";
 import {Tile} from "../../core/game-types/Tile";
 
-export class GameServiceImpl implements IGameService {
+export class MahjongServiceImpl implements IMahjongService {
     gameState: GameState | undefined
 
     stateChanged: signals.Signal<GameState> = new signals.Signal()
@@ -18,6 +18,7 @@ export class GameServiceImpl implements IGameService {
     start(): void {
         this.initState()
 
+        console.log('turn', Side[this.gameState?.currentTurn.side ?? 8])
 
         setTimeout(() => {
             this.tryRunBotTurn()
@@ -31,8 +32,6 @@ export class GameServiceImpl implements IGameService {
 
         const {currentTurn, liveWall, bottomHand} = this.gameState
         const {side, drawTile} = currentTurn
-
-        console.log(liveWall)
 
         if (side !== Side.BOTTOM || liveWall.length === 0) {
             // we can highlight tile here
@@ -48,14 +47,13 @@ export class GameServiceImpl implements IGameService {
         this.tryRunBotTurn()
     }
 
-    drawTileClick(tile: Tile): void {
+    drawTileClick(): void {
         if (this.gameState === undefined) {
             return
         }
 
         const {currentTurn, liveWall} = this.gameState
         const {side} = currentTurn
-        console.log(liveWall)
 
         if (side !== Side.BOTTOM || liveWall.length === 0) {
             // we can highlight tile here
@@ -81,7 +79,6 @@ export class GameServiceImpl implements IGameService {
     }
 
     private tryRunBotTurn() {
-        console.log('turn')
         if (this.gameState === undefined) {
             return
         }
@@ -89,15 +86,15 @@ export class GameServiceImpl implements IGameService {
         const {currentTurn, liveWall} = this.gameState
         const {side} = currentTurn
         if (side !== Side.BOTTOM && liveWall.length !== 0) {
-            const nextTurn = this.prepareNextTurn(side, liveWall)
+            this.gameState.currentTurn = this.prepareNextTurn(side, liveWall)
+
+            console.log('turn', Side[this.gameState?.currentTurn.side ?? 8])
+
+            this.stateChanged.dispatch(this.gameState)
 
             setTimeout(() => {
-                if (this.gameState) {
-                    this.gameState.currentTurn = nextTurn
-                    this.stateChanged.dispatch(this.gameState)
-                    this.tryRunBotTurn()
-                }
-            })
+                this.tryRunBotTurn()
+            }, 5000)
         }
     }
 
@@ -130,7 +127,7 @@ export class GameServiceImpl implements IGameService {
             riichi: false,
         }
 
-        const dealerSide = Math.floor(Math.random() * 5) as Side
+        const dealerSide = Math.floor(Math.random() * 4) as Side
 
         const drawTile: DrawTile = {
             ...wall.shift()!,

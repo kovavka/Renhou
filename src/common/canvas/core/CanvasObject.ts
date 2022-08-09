@@ -1,15 +1,19 @@
 import {Rectangle} from "./Rectangle";
 import {Context} from "./Context";
 import {Position} from "./Position";
+import {Tile} from "./game-types/Tile";
 
 
 export abstract class CanvasObject {
     bounds: Rectangle
     context: Context
 
-    protected constructor(context: Context, bounds: Rectangle) {
+    private _clickHandler: (() => void) | undefined
+
+    constructor(context: Context, bounds: Rectangle, clickHandler?: () => void) {
         this.context = context
         this.bounds = bounds
+        this._clickHandler = clickHandler
     }
 
     get position(): Position {
@@ -25,5 +29,8 @@ export abstract class CanvasObject {
 
     abstract render(): void
 
-    abstract clickHandler(): void
+
+    clickHandler(): void {
+        this._clickHandler?.()
+    }
 }
