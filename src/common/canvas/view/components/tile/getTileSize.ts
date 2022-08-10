@@ -9,9 +9,9 @@ export function getTileSize(side: Side, edge: EdgeType, scale: number): [number,
     let width: number
     let height: number
 
-    const isVertical = [Side.TOP, Side.BOTTOM].includes(side)
+    const isVerticalTile = [Side.TOP, Side.BOTTOM].includes(side)
     if (edge === EdgeType.SIDE) {
-        if (isVertical) {
+        if (isVerticalTile) {
             width = TILE_SIDE_B
             height = TILE_SIDE_C
         } else {
@@ -19,7 +19,7 @@ export function getTileSize(side: Side, edge: EdgeType, scale: number): [number,
             height = TILE_SIDE_B
         }
     } else {
-        if (isVertical) {
+        if (isVerticalTile) {
             width = TILE_SIDE_B
             height = TILE_SIDE_A
         } else {

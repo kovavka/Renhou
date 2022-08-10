@@ -4,7 +4,7 @@ import {DrawTile} from "./DrawTile";
 
 export type GameTurn = {
     side: Side
-    discard: DiscardTile | undefined
+    discardTile: DiscardTile | undefined
     riichiAttempt: boolean
     drawTile: DrawTile
 }

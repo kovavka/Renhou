@@ -79,12 +79,26 @@ export class MahjongServiceImpl implements IMahjongService {
     }
 
     private moveTurnToNext(gameState: GameState): GameState {
+        const {side, riichiAttempt, discardTile} = gameState.currentTurn
+        const sideDiscard = gameState.discards[side]
+
         return {
             ...gameState,
             liveWall: gameState.liveWall.slice(1),
+            discards: {
+                ...gameState.discards,
+                [side]: {
+                    ...sideDiscard,
+                    tiles: [
+                        ...sideDiscard.tiles,
+                        discardTile,
+                    ],
+                    riichiTile: sideDiscard.riichiTile || riichiAttempt,
+                }
+            },
             currentTurn: {
-                side: getNextSide(gameState.currentTurn.side),
-                discard: undefined,
+                side: getNextSide(side),
+                discardTile: undefined,
                 riichiAttempt: false,
                 drawTile: {
                     ...gameState.liveWall[0],
@@ -136,7 +150,7 @@ export class MahjongServiceImpl implements IMahjongService {
             },
             currentTurn: {
                 ...currentTurn,
-                discard: {
+                discardTile: {
                     ...tile,
                     justDrawn: false,
                 }
@@ -153,7 +167,7 @@ export class MahjongServiceImpl implements IMahjongService {
             ...gameState,
             currentTurn: {
                 ...currentTurn,
-                discard: {
+                discardTile: {
                     type: drawTile.type,
                     value: drawTile.value,
                     justDrawn: false,

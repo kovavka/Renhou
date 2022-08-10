@@ -45,7 +45,7 @@ export function generateNewGame(): GameState {
 
     const currentTurn: GameTurn = {
         side: dealerSide,
-        discard: undefined,
+        discardTile: undefined,
         riichiAttempt: false,
         drawTile,
     }
