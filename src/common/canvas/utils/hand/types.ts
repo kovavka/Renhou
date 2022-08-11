@@ -1,33 +1,27 @@
-export enum WaitPatternType {
-    TANKI,
-    SHANPON,
-    RYANMEN,
-    KANCHAN, // 1_3
-    PENCHAN, // 12_, _89
-}
-
-export type WaitPattern = {
-    tiles: number[]
-    type: WaitPatternType
-}
 
 // todo calc
 //  tilesToComplete: number[]
 
-export type SuitStructure = {
-    melds: number[][]
 
+export type WaitVariant = {
     /**
-     * includes separated tiles we can not use for waits,
-     * empty when wait pattern is tanki
-     */
-    unusedTiles: number[]
-
-    waitPatterns: WaitPattern[]
-
-    /**
-     * undefined when more than pairs -> pairs could be used as waits
-     *
+     * undefined when there are more than one pairs -> pairs will be used as waits
      */
     pair: number | undefined
+    separatedTiles: number[]
+    meldsToComplete: ([number, number])[]
+}
+
+/**
+ * variant of hand developing
+ */
+export type SuitStructure = {
+    melds: ([number, number, number])[]
+
+    /**
+     * tiles we can not use to complete melds
+     */
+    separatedTiles: number[]
+
+    meldsToComplete: ([number, number])[]
 }

@@ -33,8 +33,8 @@ function variationExist(): boolean {
 
 }
 
-type WaitPairStructure =  Omit<SuitStructure, 'melds'>
-function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitPairStructure[] {
+type WaitStructure =  Omit<SuitStructure, 'melds'>
+function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitStructure[] {
     const groups = groupIdenticalTilesForSuit(tiles)
     if (groups.some(x => x.amount === 4)) {
         // we can't wait for 5th tiles, so it's an identical meld and unused tile
@@ -47,12 +47,8 @@ function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitPairSt
         if (singleGroup.amount === 1) {
             return [
                 {
-                    unusedTiles: [],
-                    waitPatterns: [{
-                        tiles,
-                        type: WaitPatternType.TANKI
-                    }],
-                    pair: undefined,
+                    separatedTiles: tiles,
+                    meldsToComplete: [],
                 }
             ]
         }
@@ -62,14 +58,14 @@ function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitPairSt
         }
         return [
             {
-                unusedTiles: [],
+                separatedTiles: [],
                 waitPatterns: [],
                 pair: singleGroup.value,
             }
         ]
     }
 
-    const result: WaitPairStructure[] = []
+    const result: WaitStructure[] = []
 
     for (let i = 0; i < groups.length - 1; i++) {
         const groupA = groups[i]
@@ -86,21 +82,6 @@ function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitPairSt
 
         }
     }
-
-    groups.forEach(group => {
-        const pai: WaitPairStructure = {
-            unusedTiles: [],
-            waitPatterns: [{
-                tiles,
-                type: WaitPatternType.TANKI
-            }],
-            pair: undefined,
-        }
-
-        result.push({
-
-        })
-    })
 }
 
 function splitHand(tiles: Tile[]): [number[], number[], number[], number[]] {
