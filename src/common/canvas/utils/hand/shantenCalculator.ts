@@ -1,5 +1,5 @@
 import {Tile} from "../../core/game-types/Tile";
-import {SuitStructure, WaitPatternType} from "./types";
+import {SuitStructure, WaitPatternType, WaitVariant} from "./types";
 import {SuitType} from "../../core/game-types/SuitType";
 
 // todo wait for 5th tile
@@ -33,8 +33,7 @@ function variationExist(): boolean {
 
 }
 
-type WaitStructure =  Omit<SuitStructure, 'melds'>
-function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitStructure[] {
+function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitVariant[] {
     const groups = groupIdenticalTilesForSuit(tiles)
     if (groups.some(x => x.amount === 4)) {
         // we can't wait for 5th tiles, so it's an identical meld and unused tile
@@ -49,6 +48,7 @@ function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitStruct
                 {
                     separatedTiles: tiles,
                     meldsToComplete: [],
+                    pair: undefined,
                 }
             ]
         }
@@ -59,29 +59,77 @@ function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitStruct
         return [
             {
                 separatedTiles: [],
-                waitPatterns: [],
+                meldsToComplete: [],
                 pair: singleGroup.value,
             }
         ]
     }
 
-    const result: WaitStructure[] = []
+    const variants: WaitVariant[] = []
+    let remainingTiles = tiles.slice()
 
-    for (let i = 0; i < groups.length - 1; i++) {
-        const groupA = groups[i]
-        for (let j = i + 1; i < groups.length; j++) {
-            const groupB = groups[j]
-            const unusedTiles = tiles.filter(x => x !== groupA.value && x !== groupB.value)
-            // result.push({
-            //     waitPatterns: [{
-            //         tiles: [groupA.value, groupA.value, groupB.value, groupB.value],
-            //         type: WaitPatternType.SHANPON,
-            //     }],
-            //     unusedTiles,
-            // })
-
+    while (remainingTiles.length > 0) {
+        const tile = remainingTiles[0]
+        const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
+        if (hasPair) {
+            variants.push({
+                separatedTiles: [],
+                meldsToComplete: [[tile, tile]],
+                pair: tile
+            })
         }
     }
+
+    return variants
+}
+
+function getAllWaitsForTile(tile: number, remainingTiles: number[], isNumberedSuit: boolean, waitVariant): void {
+    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
+    if (hasPair) {
+        const nextRemainingTiles = remainingTiles.slice()
+        const newVariant: WaitVariant = {
+            pair: tile,
+            separatedTiles: [],
+            meldsToComplete: []
+        }
+    }
+
+    {
+        const newVariant: WaitVariant = {
+            pair: undefined,
+            separatedTiles: [tile],
+            meldsToComplete: [],
+        }
+    }
+
+    if (isNumberedSuit) {
+        remainingTiles = getRemainingTiles(remainingTiles, tile)
+
+        if (tile < 9) {
+            const nextTile = tile + 1
+            const hasNextNumber = hasTiles(remainingTiles, nextTile)
+            if (hasNextNumber) {
+                const newVariant: WaitVariant = {
+                    pair: undefined,
+                    separatedTiles: [],
+                    meldsToComplete: [[tile, nextTile]]
+                }
+            }
+        }
+        if (tile < 9) {
+            const nextNextTile = tile + 2
+            const hasNextNumber = hasTiles(remainingTiles, nextNextTile)
+            if (hasNextNumber) {
+                const newVariant: WaitVariant = {
+                    pair: undefined,
+                    separatedTiles: [],
+                    meldsToComplete: [[tile, nextNextTile]]
+                }
+            }
+        }
+
+    }
+
 }
 
 function splitHand(tiles: Tile[]): [number[], number[], number[], number[]] {
@@ -113,6 +161,14 @@ function splitHand(tiles: Tile[]): [number[], number[], number[], number[]] {
         souTiles,
         honorTiles,
     ]
+}
+
+function getRemainingTiles(all: number[], ...tilesToExclude: number[]): number[] {
+    let str = all.join('')
+    for (const tile of tilesToExclude) {
+        str = str.replace(tile.toString(), '')
+    }
+    return str.split('').map(x => Number(x))
 }
 
 function groupIdenticalTilesForSuit(tiles: number[]): {value: number, amount: number}[] {

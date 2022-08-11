@@ -8,7 +8,12 @@ export type WaitVariant = {
      * undefined when there are more than one pairs -> pairs will be used as waits
      */
     pair: number | undefined
+
+    /**
+     * tiles we can not use to complete melds
+     */
     separatedTiles: number[]
+
     meldsToComplete: ([number, number])[]
 }
 
@@ -17,11 +22,5 @@ export type WaitVariant = {
  */
 export type SuitStructure = {
     melds: ([number, number, number])[]
-
-    /**
-     * tiles we can not use to complete melds
-     */
-    separatedTiles: number[]
-
-    meldsToComplete: ([number, number])[]
+    waitVariants: WaitVariant[]
 }
