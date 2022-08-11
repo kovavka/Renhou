@@ -4,8 +4,9 @@ import {SuitType} from "../../core/game-types/SuitType";
 enum WaitPatternType {
     TANKI,
     SHANPON,
-    KANCHAN,
-    RYANMEN_PENCHAN,
+    RYANMEN,
+    KANCHAN, // 13
+    PENCHAN, // 12, 89
 }
 
 interface WaitPattern {
@@ -18,7 +19,6 @@ interface SuitStructure {
     unusedTiles: number[]
     waitPatterns: WaitPattern[]
     pair: number | undefined
-    remainingTiles: number[] // todo move outside
 }
 
 interface HandStructure {
@@ -36,13 +36,15 @@ interface HandWaitStructure {
 }
 
 export function isTempai(tiles: Tile[]): boolean {
-    if (tiles.length === 0 || tiles.length > 13 || (tiles.length > 1 && tiles.length < 4) &&) {
+    if (tiles.length !== 1 && tiles.length !== 4 && tiles.length !== 7 && tiles.length !== 10 && tiles.length !== 13) {
         return false
     }
 
     if (isChiitoiTempai(tiles) || isKokushiMusoTempai(tiles)) {
         return true
     }
+
+    return false
 
     const hand = getHand(tiles)
     const {manTiles, pinTiles, souTiles, honorTiles} = hand
@@ -117,7 +119,7 @@ function isReadyHand(hand: HandWaitStructure) {
     if (
         pairsCount === 1 &&
         waits.length === 1 &&
-        [WaitPatternType.KANCHAN, WaitPatternType.RYANMEN_PENCHAN].includes(waits[0].type)
+        [WaitPatternType.KANCHAN, WaitPatternType.RYANMEN, WaitPatternType.PENCHAN].includes(waits[0].type)
     ) {
         return true
     }
@@ -243,7 +245,7 @@ function isChiitoiTempai(tiles: Tile[]): boolean {
         return false
     }
 
-    return groupDuplicates(tiles).length === 7
+    return groupIdenticalTiles(tiles).length === 7
 }
 
 function isKokushiMusoTempai(tiles: Tile[]): boolean {
@@ -256,7 +258,7 @@ function isKokushiMusoTempai(tiles: Tile[]): boolean {
     }
 
 
-    const duplicateGroups = groupDuplicates(tiles)
+    const duplicateGroups = groupIdenticalTiles(tiles)
     // it's either 12 single tiles + pair for one of them or 13 single tiles
     return duplicateGroups.length > 11
 }
@@ -266,8 +268,7 @@ function getSimpleSuitStructure(tiles: number[]): SuitStructure {
         sets: [],
         unusedTiles: [],
         waitPatterns: [],
-        pair: undefined,
-        remainingTiles: tiles,
+        pair: undefined
     }
 }
 
@@ -288,7 +289,7 @@ function isPossibleWaitPatterns(patterns: WaitPattern[]): boolean {
     }
     if (
         patterns.length === 1 &&
-        [WaitPatternType.TANKI, WaitPatternType.KANCHAN, WaitPatternType.RYANMEN_PENCHAN].includes(patterns[0].type)
+        [WaitPatternType.TANKI, WaitPatternType.KANCHAN, WaitPatternType.RYANMEN, WaitPatternType.PENCHAN].includes(patterns[0].type)
     ) {
         return true
     }
@@ -298,7 +299,7 @@ function isPossibleWaitPatterns(patterns: WaitPattern[]): boolean {
     return false
 }
 
-function processSuit(allVariations: SuitStructure[], structure: SuitStructure, isHonors: boolean = false): SuitStructure[] {
+function processSuit(allVariations: SuitStructure[], structure: SuitStructure, remainingTiles: number[], isHonors: boolean = false): SuitStructure[] {
     if (structure.remainingTiles.length < 3) {
         structure.unusedTiles = structure.unusedTiles.concat(structure.remainingTiles)
         structure.remainingTiles = []
@@ -455,7 +456,7 @@ function getWaitPatternFrom(tile: number, handPart: number[], isHonors: boolean)
     if (hasUniqueTiles(handPart, tile, next1)) {
         return <WaitPattern>{
             tiles: [tile, next1],
-            type: WaitPatternType.RYANMEN_PENCHAN,
+            type: tile === 1 || next1 === 9 ? WaitPatternType.PENCHAN : WaitPatternType.RYANMEN,
         }
     }
 
@@ -482,18 +483,7 @@ function getWaitPatternFrom(tile: number, handPart: number[], isHonors: boolean)
     }
 }
 
-function getPairsCount(hand: HandStructure, onlyUnique: boolean): number {
-    const {manTiles, pinTiles, souTiles, honorTiles} = hand
-
-    const manPairs = getPairs(manTiles, onlyUnique)
-    const pinPairs = getPairs(pinTiles, onlyUnique)
-    const souPairs = getPairs(souTiles, onlyUnique)
-    const honorPairs = getPairs(honorTiles, onlyUnique)
-
-    return manPairs.length + pinPairs.length + souPairs.length + honorPairs.length
-}
-
-function groupDuplicates(tiles: Tile[]): {tile: Tile, amount: number}[] {
+function groupIdenticalTiles(tiles: Tile[]): {tile: Tile, amount: number}[] {
     return tiles.reduce<{tile: Tile, amount: number}[]>((acc, tile) => {
         const element = acc.find(x => x.tile.type === tile.type && x.tile.value === tile.value)
         if (element !== undefined) {

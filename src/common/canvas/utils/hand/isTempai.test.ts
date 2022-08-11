@@ -195,28 +195,28 @@ describe('isTempai', () => {
         })
         it('Not a templai when tiles length > 1 && < 4', () => {
             const tiles: Tile[] = []
-            for (let i = 0; i < 4; i++) {
+            for (let i = 1; i < 4; i++) {
                 tiles.push({type: SuitType.MANZU, value: 1})
             }
             expect(isTempai(tiles)).toBe(false)
         })
         it('Not a templai when tiles length > 1 && < 7', () => {
             const tiles: Tile[] = []
-            for (let i = 0; i < 7; i++) {
+            for (let i = 1; i < 7; i++) {
                 tiles.push({type: SuitType.MANZU, value: 1})
             }
             expect(isTempai(tiles)).toBe(false)
         })
         it('Not a templai when tiles length > 4 && < 10', () => {
             const tiles: Tile[] = []
-            for (let i = 0; i < 10; i++) {
+            for (let i = 1; i < 10; i++) {
                 tiles.push({type: SuitType.MANZU, value: 1})
             }
             expect(isTempai(tiles)).toBe(false)
         })
         it('Not a templai when tiles length > 10 && < 13', () => {
             const tiles: Tile[] = []
-            for (let i = 0; i < 13; i++) {
+            for (let i = 1; i < 13; i++) {
                 tiles.push({type: SuitType.MANZU, value: 1})
             }
             expect(isTempai(tiles)).toBe(false)
