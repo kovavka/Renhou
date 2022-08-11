@@ -1,135 +1,141 @@
 import {Tile} from "../../core/game-types/Tile";
-import {SuitStructure, WaitPatternType, WaitVariant} from "./types";
+import {HandStructureVariants, ShantenInfo, SuitStructure} from "./types";
 import {SuitType} from "../../core/game-types/SuitType";
 
-// todo wait for 5th tile
+// todo what is we wait for 5th tile
 
-export function getShanten(tiles: Tile[]) {
-    // if (tiles.length !== 1 && tiles.length !== 4 && tiles.length !== 7 && tiles.length !== 10 && tiles.length !== 13) {
-    //     return []
-    // }
 
+export function getShantenInfos(tiles: Tile[]): ShantenInfo[] {
     const [manTiles, pinTiles, souTiles, honorTiles] = splitHand(tiles)
-}
 
-
-function processNumberedSuit(tiles: number[]): SuitStructure[] {
-    const emptyStructure = {
-        sets: [],
-        unusedTiles: [],
-        waitPatterns: [],
-        pair: undefined,
-    }
-    return processSuit(emptyStructure, tiles, [])
-}
-
-function processSuit(structure: SuitStructure, remainingTiles: number[], allVariations: SuitStructure[]): SuitStructure[] {
-    if (remainingTiles.length <= 4) {
-
-    }
-}
-
-function variationExist(): boolean {
+    const manVariants = processSuit(manTiles, true)
+    const pinVariants = processSuit(pinTiles, true)
+    const souVariants = processSuit(souTiles, true)
+    const honorVariants = processSuit(honorTiles, false)
 
 }
 
-function findPairsAndWaits(tiles: number[], isNumberedSuit: boolean): WaitVariant[] {
-    const groups = groupIdenticalTilesForSuit(tiles)
-    if (groups.some(x => x.amount === 4)) {
-        // we can't wait for 5th tiles, so it's an identical meld and unused tile
-        // todo ask
-        // todo maybe handle it in melds processing?
-    }
+function calcShantenForVariant(manVariant: SuitStructure, pinVariant: SuitStructure, souVariant: SuitStructure, honorVariant: SuitStructure): number {
+    const manCount = manVariant.separatedTiles.length + manVariant.meldsToComplete.length
+    const pinCount = pinVariant.separatedTiles.length + pinVariant.meldsToComplete.length
+    const souCount = souVariant.separatedTiles.length + souVariant.meldsToComplete.length
+    const honorCount = honorVariant.separatedTiles.length + honorVariant.meldsToComplete.length
 
-    if (groups.length === 1) {
-        const singleGroup = groups[0]
-        if (singleGroup.amount === 1) {
-            return [
-                {
-                    separatedTiles: tiles,
-                    meldsToComplete: [],
-                    pair: undefined,
+    const shanten = manCount + pinCount + souCount + honorCount
+    return shanten < 7 ? shanten : -1
+}
+
+function processSuit(suitTiles: number[],  isNumberedSuit: boolean): SuitStructure[] {
+    const allVariants = getAllVariantsForSuit(suitTiles, isNumberedSuit, [])
+    return allVariants.map((groupingVariant) => {
+        const melds: ([number, number, number])[] = []
+        let pair: number | undefined
+        const separatedTiles: number[] = []
+        const meldsToComplete: ([number, number])[] = []
+
+        groupingVariant.forEach(group => {
+            if (group.length === 3) {
+                melds.push(group)
+            } else if (group.length === 2) {
+                if (groupingVariant.length === 0 && group[0] === group[1]) {
+                    // the only pair we have
+                    pair = group[0]
+                } else {
+                    meldsToComplete.push(group)
                 }
-            ]
-        }
-
-        if (singleGroup.amount !== 2) {
-            throw new Error('it should process 3 or 4 identical tiles as meld')
-        }
-        return [
-            {
-                separatedTiles: [],
-                meldsToComplete: [],
-                pair: singleGroup.value,
+            } else {
+                separatedTiles.push(group[0])
             }
-        ]
-    }
+        })
 
-    const variants: WaitVariant[] = []
-    let remainingTiles = tiles.slice()
-
-    while (remainingTiles.length > 0) {
-        const tile = remainingTiles[0]
-        const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
-        if (hasPair) {
-            variants.push({
-                separatedTiles: [],
-                meldsToComplete: [[tile, tile]],
-                pair: tile
-            })
+        return {
+            melds,
+            pair,
+            separatedTiles,
+            meldsToComplete,
         }
-    }
-
-    return variants
+    })
 }
 
-function getAllWaitsForTile(tile: number, remainingTiles: number[], isNumberedSuit: boolean, waitVariant): void {
+type TilesGroup = [number] | [number, number] | [number, number, number]
+type GroupingVariant = TilesGroup[]
+
+/**
+ * Get all possible variation of hand developing in current suit.
+ * Separated tiles will be added to result only if they are not a part of any group
+ */
+function getAllVariantsForSuit(remainingTiles: number[], isNumberedSuit: boolean, currentVariant: GroupingVariant): GroupingVariant[] {
+    if (remainingTiles.length === 0) {
+       return [currentVariant]
+    }
+
+    const variants: GroupingVariant[] = []
+    const tile = remainingTiles[0]
+
+    let hasGroupToProcess = false
+
     const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
     if (hasPair) {
-        const nextRemainingTiles = remainingTiles.slice()
-        const newVariant: WaitVariant = {
-            pair: tile,
-            separatedTiles: [],
-            meldsToComplete: []
-        }
+        const newGroup: TilesGroup = [tile, tile]
+        const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+        const nextVariants = getAllVariantsForSuit(nextRemaining, isNumberedSuit, [newGroup])
+        variants.push(...nextVariants)
+        hasGroupToProcess = true
     }
 
-    {
-        const newVariant: WaitVariant = {
-            pair: undefined,
-            separatedTiles: [tile],
-            meldsToComplete: [],
-        }
+    const hasPon = hasIdenticalTiles(remainingTiles, tile, 3)
+    if (hasPon) {
+        // identical meld (222)
+        const newGroup: TilesGroup = [tile, tile, tile]
+        const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+        const nextVariants = getAllVariantsForSuit(nextRemaining, isNumberedSuit, [newGroup])
+        variants.push(...nextVariants)
+        hasGroupToProcess = true
     }
 
     if (isNumberedSuit) {
-        remainingTiles = getRemainingTiles(remainingTiles, tile)
+        const nextTile = tile + 1
+        const nextNextTile = tile + 2
 
-        if (tile < 9) {
-            const nextTile = tile + 1
-            const hasNextNumber = hasTiles(remainingTiles, nextTile)
-            if (hasNextNumber) {
-                const newVariant: WaitVariant = {
-                    pair: undefined,
-                    separatedTiles: [],
-                    meldsToComplete: [[tile, nextTile]]
-                }
-            }
-        }
-        if (tile < 9) {
-            const nextNextTile = tile + 2
-            const hasNextNumber = hasTiles(remainingTiles, nextNextTile)
-            if (hasNextNumber) {
-                const newVariant: WaitVariant = {
-                    pair: undefined,
-                    separatedTiles: [],
-                    meldsToComplete: [[tile, nextNextTile]]
-                }
-            }
+        const hasNextNumber = tile < 9 && hasTiles(remainingTiles, nextTile)
+        const hasNextNextNumber = tile < 8 && hasTiles(remainingTiles, nextNextTile)
+
+        if (hasNextNumber) {
+            // waits like 12_, 23_
+            const newGroup: TilesGroup = [tile, nextTile]
+            const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+            const nextVariants = getAllVariantsForSuit(nextRemaining, isNumberedSuit, [newGroup])
+            variants.push(...nextVariants)
         }
 
+        if (hasNextNextNumber) {
+            // waits like 1_3
+            const newGroup: TilesGroup = [tile, nextNextTile]
+            const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+            const nextVariants = getAllVariantsForSuit(nextRemaining, isNumberedSuit, [newGroup])
+            variants.push(...nextVariants)
+        }
+
+        if (hasNextNumber && hasNextNextNumber) {
+            // sequential meld (123)
+            const newGroup: TilesGroup = [tile, nextTile, nextNextTile]
+            const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+            const nextVariants = getAllVariantsForSuit(nextRemaining, isNumberedSuit, [newGroup])
+            variants.push(...nextVariants)
+        }
+
+        hasGroupToProcess = hasGroupToProcess || hasNextNumber || hasNextNextNumber
     }
 
+    if (!hasGroupToProcess) {
+        // just 1 separated tile
+        const nextRemaining = remainingTiles.slice(1)
+        const newGroup: TilesGroup = [tile]
+        const nextVariants = getAllVariantsForSuit(nextRemaining, isNumberedSuit, [newGroup])
+        variants.push(...nextVariants)
+    }
+
+    return variants.map(variant => currentVariant.concat(variant))
 }
 
 function splitHand(tiles: Tile[]): [number[], number[], number[], number[]] {

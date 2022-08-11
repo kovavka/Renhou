@@ -1,9 +1,10 @@
 
-// todo calc
-//  tilesToComplete: number[]
+/**
+ * variant of hand developing
+ */
+export type SuitStructure = {
+    melds: ([number, number, number])[]
 
-
-export type WaitVariant = {
     /**
      * undefined when there are more than one pairs -> pairs will be used as waits
      */
@@ -17,10 +18,10 @@ export type WaitVariant = {
     meldsToComplete: ([number, number])[]
 }
 
-/**
- * variant of hand developing
- */
-export type SuitStructure = {
-    melds: ([number, number, number])[]
-    waitVariants: WaitVariant[]
+export type ShantenInfo = {
+    man: SuitStructure
+    pin: SuitStructure
+    sou: SuitStructure
+    honor: SuitStructure
+    amount: number
 }
