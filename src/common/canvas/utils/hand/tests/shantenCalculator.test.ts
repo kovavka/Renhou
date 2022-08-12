@@ -3,7 +3,7 @@ import {man1, man2, man3, man4} from "./testVariables";
 
 describe('shantenCalculator', () => {
     it('', () => {
-        const tiles = [man1, man1, man2, man3, man4]
+        const tiles = [man1, man1, man2, man3]
         const t = getShantenInfo(tiles)
     })
 })

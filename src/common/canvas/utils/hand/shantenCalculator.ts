@@ -1,8 +1,12 @@
 import {Tile} from "../../core/game-types/Tile";
-import {HandSpittingInfo, TwoTilesGroup, MeldTileGroup, SingleTileGroup} from "./types";
 import {SuitType} from "../../core/game-types/SuitType";
-
-// todo what is we wait for 5th tile
+import {
+    getIdenticalTileCount,
+    excludeTiles,
+    getUniqueTiles, groupIdenticalTiles,
+    hasIdenticalTiles, hasTiles,
+    isTheSameTile
+} from "../tiles/tileContains";
 
 enum HandStructureType {
     REGULAR,
@@ -11,6 +15,7 @@ enum HandStructureType {
 }
 
 type HandStructureVariant = {
+    // todo maybe we don't need it?
     splittingInfo: HandSpittingInfo
 
     structureType: HandStructureType
@@ -33,6 +38,22 @@ type HandStructureVariant = {
     shantenCount: number
 }
 
+type MeldTileGroup = [Tile, Tile, Tile]
+type TwoTilesGroup = [Tile, Tile] // pair or 2/3 sequential meld tiles
+type SingleTileGroup = [Tile]
+
+type HandSpittingInfo = {
+    melds: MeldTileGroup[]
+
+    groups: (TwoTilesGroup)[]
+
+    /**
+     * tiles we can not use to complete melds
+     */
+    separatedTiles: Tile[]
+}
+
+
 export function getShantenInfo(tiles: Tile[]): HandStructureVariant[] {
     const handSplitVariants = processTiles(tiles)
 
@@ -49,19 +70,148 @@ export function getShantenInfo(tiles: Tile[]): HandStructureVariant[] {
     }
 
     handSplitVariants.forEach(info => {
-        const {melds, groups, separatedTiles} = info
-
+        const regular = getRegularHandStructure(info, tiles)
+        result.push(regular)
     })
 
-    // honorVariant.separatedTiles.length + honorVariant.meldsToComplete.length
-    // return shanten < 7 ? shanten : -1
-
-    return []
+    return result.sort((a, b) => a.shantenCount - b.shantenCount)
 }
 
-function getHandSizeForStructure(info: HandSpittingInfo) {
+function getBaseShantenCount(handSize: number, meldsCount: number, groupsCount: number) {
+    // 13 -> 6; 10 -> 6; 7 -> 4; 4 -> 2;
+    const maxPossibleShantenCount = Math.min(6, (handSize - 1) / 3 * 2)
+
+    const maxMeldsCount = Math.floor(handSize / 3)
+    let meldsLeft = maxMeldsCount - meldsCount
+    let shatenCount = 0
+
+    // each group needs 1 tile to become a meld
+    for (let i = 0; i < groupsCount && meldsLeft > 0; i++) {
+        shatenCount++
+        meldsLeft--
+    }
+
+    // each separated tile needs 2 tiles to become a meld
+    while (meldsLeft > 0) {
+        shatenCount += 2
+        meldsLeft--
+    }
+
+    return Math.min(shatenCount, maxPossibleShantenCount)
+}
+
+function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): HandStructureVariant {
     const {melds, groups, separatedTiles} = info
-    return melds.length * 3 + groups.length * 2 + separatedTiles.length
+
+    if (allTiles.length === 1) {
+        return {
+            splittingInfo: info,
+            structureType: HandStructureType.REGULAR,
+            tilesToImprove: [],
+            possibleReplacements: separatedTiles,
+            tilesToDiscard: [],
+            shantenCount: 0,
+        }
+    }
+
+    const shantenCount = getBaseShantenCount(allTiles.length, melds.length, groups.length)
+
+    const tilesToDiscard: Tile[] = []
+    const tilesToImprove: Tile[] = []
+    const possibleReplacements: Tile[] = []
+
+
+    const maxMeldsToComplete = Math.floor(allTiles.length / 3) - melds.length
+    const canDiscardSomeMelds = maxMeldsToComplete > groups.length
+    const needToGetMoreGroups = groups.length < shantenCount
+    const hasPair = groups.some(x => isTheSameTile(x[0], x[1]))
+
+    groups.forEach(group => {
+        const [tileA, tileB] = group
+
+        if (isTheSameTile(tileA, tileB)) {
+            tilesToImprove.push(tileA)
+        } else {
+            // sequence meld
+
+            // to make a pair - could be helpful
+            tilesToImprove.push(tileA)
+            tilesToImprove.push(tileB)
+
+            const minValue =  Math.min(tileA.value, tileB.value)
+            const maxValue =  Math.max(tileA.value, tileB.value)
+            if ((maxValue - minValue) === 2) {
+                // kanchan 1_3
+                tilesToImprove.push({
+                    type: tileA.type,
+                    value: minValue + 1
+                })
+            } else if (minValue === 1) {
+                // penchan 12_
+                tilesToImprove.push({
+                    type: tileA.type,
+                    value: maxValue + 1
+                })
+            } else if (maxValue === 9) {
+                // penchan _89
+                tilesToImprove.push({
+                    type: tileA.type,
+                    value: minValue - 1
+                })
+            } else {
+                // ryanmen 23
+                tilesToImprove.push({
+                    type: tileA.type,
+                    value: minValue - 1
+                })
+                tilesToImprove.push({
+                    type: tileA.type,
+                    value: maxValue + 1
+                })
+            }
+        }
+
+        if (canDiscardSomeMelds) {
+            tilesToDiscard.push(tileA)
+            tilesToDiscard.push(tileB)
+        }
+    })
+
+    separatedTiles.forEach(tile => {
+        if (!hasPair) {
+            tilesToImprove.push(tile)
+            possibleReplacements.push(tile)
+        } else if (needToGetMoreGroups) {
+            tilesToImprove.push(tile)
+            if (tile.type !== SuitType.JIHAI) {
+                if (tile.value > 1) {
+                    tilesToImprove.push({
+                        type: tile.type,
+                        value: tile.value + 1
+                    })
+                }
+                if (tile.value < 9) {
+                    tilesToImprove.push({
+                        type: tile.type,
+                        value: tile.value - 1
+                    })
+                }
+            }
+
+            possibleReplacements.push(tile)
+        } else {
+            tilesToDiscard.push(tile)
+        }
+    })
+
+    return {
+        splittingInfo: info,
+        structureType: HandStructureType.CHIITOI,
+        tilesToImprove: getUniqueTiles(tilesToImprove),
+        possibleReplacements,
+        tilesToDiscard,
+        shantenCount,
+    }
 }
 
 function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined {
@@ -247,7 +397,7 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
     const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
     if (hasPair) {
         const newGroup: TilesGroup = [tile, tile]
-        const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+        const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
         const nextVariants = getAllVariants(nextRemaining, [newGroup])
         variants.push(...nextVariants)
     }
@@ -256,7 +406,7 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
     if (hasPon) {
         // identical meld (222)
         const newGroup: TilesGroup = [tile, tile, tile]
-        const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+        const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
         const nextVariants = getAllVariants(nextRemaining, [newGroup])
         variants.push(...nextVariants)
     }
@@ -278,7 +428,7 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
         if (hasNextNumber) {
             // waits like 12_, 23_
             const newGroup: TilesGroup = [tile, nextTile]
-            const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+            const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
             const nextVariants = getAllVariants(nextRemaining, [newGroup])
             variants.push(...nextVariants)
         }
@@ -286,7 +436,7 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
         if (hasNextNextNumber) {
             // waits like 1_3
             const newGroup: TilesGroup = [tile, nextNextTile]
-            const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+            const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
             const nextVariants = getAllVariants(nextRemaining, [newGroup])
             variants.push(...nextVariants)
         }
@@ -294,7 +444,7 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
         if (hasNextNumber && hasNextNextNumber) {
             // sequential meld (123)
             const newGroup: TilesGroup = [tile, nextTile, nextNextTile]
-            const nextRemaining = getRemainingTiles(remainingTiles, ...newGroup)
+            const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
             const nextVariants = getAllVariants(nextRemaining, [newGroup])
             variants.push(...nextVariants)
         }
@@ -309,52 +459,4 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
     }
 
     return variants.map(variant => currentVariant.concat(variant))
-}
-
-function getRemainingTiles(all: Tile[], ...tilesToExclude: Tile[]): Tile[] {
-    const result: Tile[] = []
-
-    all.forEach(tile => {
-        const excludeIndex = tilesToExclude.findIndex(x => x.type === tile.type && x.value === tile.value)
-        if (excludeIndex === -1) {
-            result.push(tile)
-        } else {
-            tilesToExclude = [...tilesToExclude.slice(0, excludeIndex), ...tilesToExclude.slice(excludeIndex + 1)]
-        }
-    })
-    return result
-}
-
-export function hasTiles(all: Tile[], ...tiles: Tile[]): boolean {
-    return tiles.every(tile => all.findIndex(x => x.value === tile.value && x.type === tile.type) !== -1)
-}
-
-export function getIdenticalTileCount(all: Tile[], tile: Tile): number {
-    return  all.filter(x => isTheSameTile(x, tile)).length
-}
-
-function hasIdenticalTiles(all: Tile[], tile: Tile, count: number): boolean {
-    return getIdenticalTileCount(all, tile) >= count
-}
-
-function isTheSameTile(tileA: Tile, tileB: Tile): boolean {
-    return tileA.type === tileB.type && tileA.value === tileB.value
-}
-
-
-function groupIdenticalTiles(tiles: Tile[]): {tile: Tile, count: number}[] {
-    return tiles.reduce<{ tile: Tile, count: number }[]>((acc, tile) => {
-        const element = acc.find(x => isTheSameTile(x.tile, tile))
-        if (element !== undefined) {
-            const index = acc.indexOf(element)
-            acc[index].count = acc[index].count + 1
-        } else {
-            acc.push({
-                tile,
-                count: 1,
-            })
-        }
-
-        return acc
-    }, [])
 }

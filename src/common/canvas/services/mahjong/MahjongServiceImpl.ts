@@ -1,12 +1,12 @@
 import {GameState, IMahjongService} from "./IMahjongService";
 import {Hand} from "../../core/game-types/Hand";
 import {DeadWallTile} from "../../core/game-types/DeadWallTile";
-import {generateWall} from "../../utils/tile/wallGenerator";
+import {generateWall} from "../../utils/game/wallGenerator";
 import {Side} from "../../core/game-types/Side";
 import {GameTurn} from "../../core/game-types/GameTurn";
 import {DrawTile} from "../../core/game-types/DrawTile";
-import {sortTiles} from "../../utils/tile/sortTiles";
-import {getNextSide} from "../../utils/tile/prevNextSide";
+import {sortTiles} from "../../utils/game/sortTiles";
+import {getNextSide} from "../../utils/game/prevNextSide";
 import signals from "signals";
 import {Tile} from "../../core/game-types/Tile";
 import {DiscardTile} from "../../core/game-types/Discard";
