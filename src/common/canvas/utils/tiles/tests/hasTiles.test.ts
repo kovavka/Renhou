@@ -1,5 +1,5 @@
-import {man1, man2, man3, man4, sou1, sou9} from "./testVariables";
-import {hasTiles} from "../shantenCalculator";
+import {man1, man2, man3, man4, sou1, sou9} from "../../hand/tests/testVariables";
+import {hasTiles} from "../tileContains";
 
 describe('hasTiles', () => {
     it('should find a tile in a list if exists', () => {

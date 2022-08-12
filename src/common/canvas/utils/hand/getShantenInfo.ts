@@ -3,10 +3,13 @@ import {SuitType} from "../../core/game-types/SuitType";
 import {
     getIdenticalTileCount,
     excludeTiles,
-    getUniqueTiles, groupIdenticalTiles,
+    getUniqueTiles,
     hasIdenticalTiles, hasTiles,
     isTheSameTile
 } from "../tiles/tileContains";
+import {isTerminalOrHonorTile} from "../tiles/isTerminalOrHonorTile";
+import {groupIdenticalTiles} from "../tiles/groupIdenticalTiles";
+import {getBaseShantenCount} from "./getBaseShantenCount";
 
 enum HandStructureType {
     REGULAR,
@@ -77,29 +80,6 @@ export function getShantenInfo(tiles: Tile[]): HandStructureVariant[] {
     return result.sort((a, b) => a.shantenCount - b.shantenCount)
 }
 
-function getBaseShantenCount(handSize: number, meldsCount: number, groupsCount: number) {
-    // 13 -> 6; 10 -> 6; 7 -> 4; 4 -> 2;
-    const maxPossibleShantenCount = Math.min(6, (handSize - 1) / 3 * 2)
-
-    const maxMeldsCount = Math.floor(handSize / 3)
-    let meldsLeft = maxMeldsCount - meldsCount
-    let shatenCount = 0
-
-    // each group needs 1 tile to become a meld
-    for (let i = 0; i < groupsCount && meldsLeft > 0; i++) {
-        shatenCount++
-        meldsLeft--
-    }
-
-    // each separated tile needs 2 tiles to become a meld
-    while (meldsLeft > 0) {
-        shatenCount += 2
-        meldsLeft--
-    }
-
-    return Math.min(shatenCount, maxPossibleShantenCount)
-}
-
 function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): HandStructureVariant {
     const {melds, groups, separatedTiles} = info
 
@@ -114,7 +94,9 @@ function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): Hand
         }
     }
 
-    const shantenCount = getBaseShantenCount(allTiles.length, melds.length, groups.length)
+    const hasPair = groups.some(x => isTheSameTile(x[0], x[1]))
+
+    const shantenCount = getBaseShantenCount(allTiles.length, melds.length, groups.length, hasPair)
 
     const tilesToDiscard: Tile[] = []
     const tilesToImprove: Tile[] = []
@@ -124,7 +106,6 @@ function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): Hand
     const maxMeldsToComplete = Math.floor(allTiles.length / 3) - melds.length
     const canDiscardSomeMelds = maxMeldsToComplete > groups.length
     const needToGetMoreGroups = groups.length < shantenCount
-    const hasPair = groups.some(x => isTheSameTile(x[0], x[1]))
 
     groups.forEach(group => {
         const [tileA, tileB] = group
@@ -222,9 +203,14 @@ function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined
     const tilesToDiscard: Tile[] = []
     const tilesToImprove: Tile[] = []
     const possibleReplacements: Tile[] = []
-    let shantenCount = 0
 
     const identicalGroups = groupIdenticalTiles(allTiles)
+    let shantenCount = 6 - identicalGroups.filter(x => x.count >= 2).length
+
+    const needPair = identicalGroups.filter(x => x.count === 1).length === 0
+    if (needPair) {
+        shantenCount++
+    }
 
     const infoGroups: (TwoTilesGroup)[] = []
     const separatedTiles: Tile[] = []
@@ -233,7 +219,6 @@ function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined
         if (group.count === 2) {
             infoGroups.push([group.tile, group.tile])
         } if (group.count > 2) {
-            shantenCount++
             tilesToDiscard.push(group.tile)
 
             separatedTiles.push(group.tile)
@@ -250,6 +235,30 @@ function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined
         }
     }
 
+    // add all possible tiles (except tile in the hand) as tiles to improve
+    if (shantenCount === 1 && tilesToImprove.length === 0) {
+        for (let i = 1; i < 10; i++) {
+            const manTile = {type: SuitType.MANZU, value: i}
+            if (!hasTiles(allTiles, manTile)) {
+                tilesToImprove.push(manTile)
+            }
+            const pinTile = {type: SuitType.PINZU, value: i}
+            if (!hasTiles(allTiles, pinTile)) {
+                tilesToImprove.push(pinTile)
+            }
+            const souTile = {type: SuitType.SOUZU, value: i}
+            if (!hasTiles(allTiles, souTile)) {
+                tilesToImprove.push(souTile)
+            }
+
+            if (i < 8) {
+                const jihaiTile = {type: SuitType.JIHAI, value: i}
+                if (!hasTiles(allTiles, jihaiTile)) {
+                    tilesToImprove.push(jihaiTile)
+                }
+            }
+        }
+    }
 
     const info: HandSpittingInfo = {
         melds: [],
@@ -278,7 +287,6 @@ function getKokushiMusoStructure(allTiles: Tile[]): HandStructureVariant | undef
 
     // only unique
     const missingTiles: Tile[] = []
-    let missingTilesLength = 0
 
     const singleTiles: Tile[] = []
     const terminalHonorPairs: Tile[] = []
@@ -286,7 +294,6 @@ function getKokushiMusoStructure(allTiles: Tile[]): HandStructureVariant | undef
     getAllTerimalAndHonorTiles().forEach(tile => {
         const count = getIdenticalTileCount(allTiles, tile)
         if (count === 0) {
-            missingTilesLength++
             missingTiles.push(tile)
         }
 
@@ -303,21 +310,30 @@ function getKokushiMusoStructure(allTiles: Tile[]): HandStructureVariant | undef
         }
     })
 
-    let shantenCount = missingTilesLength
     const tilesToImprove: Tile[] = missingTiles.slice()
+    let shantenCount = 0
 
-    if (terminalHonorPairs.length === 0) {
-        shantenCount++
-        singleTiles.forEach(tile => {
-            tilesToImprove.push(tile)
-        })
-    } else if (terminalHonorPairs.length > 1) {
-        terminalHonorPairs.forEach(tile => {
-            if (!tilesToDiscard.includes(tile)) {
-                tilesToDiscard.push(tile)
-            }
-        })
+    // it's tempai when we have 12 tiles and a pair for one of them
+    if (terminalHonorPairs.length !== 1 || singleTiles.length !== 11) {
+        shantenCount = missingTiles.length
+        // it's tempai when we have all 13, but don't have a pair
+        if (terminalHonorPairs.length === 0 && singleTiles.length !== 13) {
+            shantenCount++
+            singleTiles.forEach(tile => {
+                tilesToImprove.push(tile)
+            })
+        } else if (terminalHonorPairs.length > 1) {
+            terminalHonorPairs.forEach(tile => {
+                if (!tilesToDiscard.includes(tile)) {
+                    tilesToDiscard.push(tile)
+                }
+            })
+        }
     }
+
+    allTiles.filter(tile => !isTerminalOrHonorTile(tile)).forEach(tile => {
+        tilesToDiscard.push(tile)
+    })
 
     const info: HandSpittingInfo = {
         melds: [],

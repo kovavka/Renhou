@@ -16,6 +16,7 @@ export const pin9 =  {type: SuitType.PINZU, value: 9}
 export const sou1 =  {type: SuitType.SOUZU, value: 1}
 export const sou2 =  {type: SuitType.SOUZU, value: 2}
 export const sou3 =  {type: SuitType.SOUZU, value: 3}
+export const sou8 =  {type: SuitType.SOUZU, value: 8}
 export const sou9 =  {type: SuitType.SOUZU, value: 9}
 export const haku =  {type: SuitType.JIHAI, value: 1}
 export const hatsu =  {type: SuitType.JIHAI, value: 2}
