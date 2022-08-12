@@ -34,8 +34,8 @@ describe('hasTempai', () => {
             const tiles = [man1, man1, man9, man9, pin1, pin1, pin9, pin9, sou1, sou1, sou1, sou1, sou9]
             expect(hasTempai(tiles)).toBe(false)
         })
-        it('Not a templai when there are 4 pairs and 3 unique tiles', () => {
-            const tiles = [man1, man1, man9, man9, pin1, pin1, pin9, pin9, sou1, sou1, sou1, sou1, sou9]
+        it('Not a templai when there are 5 pairs and 3 unique tiles', () => {
+            const tiles = [man1, man1, man9, man9, pin1, pin1, pin9, pin9, sou1, sou1, haku, hatsu, chun]
             expect(hasTempai(tiles)).toBe(false)
         })
     })

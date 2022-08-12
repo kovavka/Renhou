@@ -16,7 +16,7 @@ function typeToNumber(type: SuitType) {
     }
 }
 
-export function sortTiles(tiles: Tile[]) {
+export function sortTiles(tiles: Tile[]): Tile[] {
     return tiles.sort((a, b) => {
         if (a.type === b.type)
             return a.value - b.value

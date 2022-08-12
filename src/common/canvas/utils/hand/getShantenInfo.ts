@@ -11,7 +11,7 @@ import {isTerminalOrHonorTile} from "../tiles/isTerminalOrHonorTile";
 import {groupIdenticalTiles} from "../tiles/groupIdenticalTiles";
 import {getBaseShantenCount} from "./getBaseShantenCount";
 
-enum HandStructureType {
+export enum HandStructureType {
     REGULAR,
     CHIITOI,
     KOKUSHI_MUSO,
@@ -29,7 +29,7 @@ type HandStructureVariant = {
     tilesToImprove: Tile[]
 
     /**
-     * tiles player can replace without shanten decrease
+     * tiles player can replace without shanten changing (especially decrease)
      */
     possibleReplacements: Tile[]
 
@@ -57,10 +57,17 @@ type HandSpittingInfo = {
 }
 
 
+// todo when it's 0 shanten and tanki wait we have tile to replace
+
 export function getShantenInfo(tiles: Tile[]): HandStructureVariant[] {
     const handSplitVariants = processTiles(tiles)
 
     const result: HandStructureVariant[] = []
+
+    handSplitVariants.forEach(info => {
+        const regular = getRegularHandStructure(info, tiles)
+        result.push(regular)
+    })
 
     const kokushiMuso = getKokushiMusoStructure(tiles)
     if (kokushiMuso !== undefined && kokushiMuso.shantenCount < 7) {
@@ -71,11 +78,6 @@ export function getShantenInfo(tiles: Tile[]): HandStructureVariant[] {
     if (chiitoi !== undefined) {
         result.push(chiitoi)
     }
-
-    handSplitVariants.forEach(info => {
-        const regular = getRegularHandStructure(info, tiles)
-        result.push(regular)
-    })
 
     return result.sort((a, b) => a.shantenCount - b.shantenCount)
 }
@@ -94,7 +96,8 @@ function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): Hand
         }
     }
 
-    const hasPair = groups.some(x => isTheSameTile(x[0], x[1]))
+    const pairs = groups.filter(x => isTheSameTile(x[0], x[1]))
+    const hasPair = pairs.length > 0
 
     const shantenCount = getBaseShantenCount(allTiles.length, melds.length, groups.length, hasPair)
 
@@ -107,17 +110,29 @@ function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): Hand
     const canDiscardSomeMelds = maxMeldsToComplete > groups.length
     const needToGetMoreGroups = groups.length < shantenCount
 
+
+    // it's impossible to improve hand using 3rd tile for pair, when we have incompleted sequence meld,
+    // e.g. 11 45 -> we can improve only with 36
+    const canUpgradePairToMeld = pairs.length !== 1 || separatedTiles.length !== 0
+
+    // when we have only sequence groups we should beak one of them to make a pair
+    //  e.g. 13 45 -> we need a pair for one of these tiles
+    const shouldMakePairFromSeqMeld = !hasPair && separatedTiles.length === 0
+
     groups.forEach(group => {
         const [tileA, tileB] = group
 
         if (isTheSameTile(tileA, tileB)) {
-            tilesToImprove.push(tileA)
+            if (canUpgradePairToMeld) {
+                tilesToImprove.push(tileA)
+            }
         } else {
             // sequence meld
 
-            // to make a pair - could be helpful
-            tilesToImprove.push(tileA)
-            tilesToImprove.push(tileB)
+            if (shouldMakePairFromSeqMeld) {
+                tilesToImprove.push(tileA)
+                tilesToImprove.push(tileB)
+            }
 
             const minValue =  Math.min(tileA.value, tileB.value)
             const maxValue =  Math.max(tileA.value, tileB.value)
@@ -187,7 +202,7 @@ function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): Hand
 
     return {
         splittingInfo: info,
-        structureType: HandStructureType.CHIITOI,
+        structureType: HandStructureType.REGULAR,
         tilesToImprove: getUniqueTiles(tilesToImprove),
         possibleReplacements,
         tilesToDiscard,
@@ -205,10 +220,21 @@ function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined
     const possibleReplacements: Tile[] = []
 
     const identicalGroups = groupIdenticalTiles(allTiles)
-    let shantenCount = 6 - identicalGroups.filter(x => x.count >= 2).length
+    const pairsCount = identicalGroups.filter(x => x.count > 1).length
+    let shantenCount = 6 - pairsCount
 
-    const needPair = identicalGroups.filter(x => x.count === 1).length === 0
-    if (needPair) {
+    // group of 4 affect shanten, because we have to discard 2 tiles for each group,
+    // while group of 3 is just 1 tile to discard and we could replace it to a tile without pair we already have
+    const groupsOf4Count = identicalGroups.filter(x => x.count === 4).length
+    if (groupsOf4Count !== 0) {
+        shantenCount += groupsOf4Count * 2 - 1
+    }
+
+    const tilesWithoutGroup = identicalGroups.filter(x => x.count === 1)
+    // it's possible only when we have 5 pairs and group of 3.
+    // In that case we need to replace third tile to something else
+    const needUniqueTile = tilesWithoutGroup.length === 0
+    if (needUniqueTile) {
         shantenCount++
     }
 
@@ -235,8 +261,10 @@ function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined
         }
     }
 
-    // add all possible tiles (except tile in the hand) as tiles to improve
-    if (shantenCount === 1 && tilesToImprove.length === 0) {
+    // add all possible tiles (except tile in the hand) as tiles to improve.
+    // it will increase shanten when we have at least one group with length > 2
+    // and less than 2 tiles without group
+    if (identicalGroups.filter(x => x.count > 2).length > 0 && tilesWithoutGroup.length < 2) {
         for (let i = 1; i < 10; i++) {
             const manTile = {type: SuitType.MANZU, value: i}
             if (!hasTiles(allTiles, manTile)) {
@@ -316,9 +344,8 @@ function getKokushiMusoStructure(allTiles: Tile[]): HandStructureVariant | undef
     // it's tempai when we have 12 tiles and a pair for one of them
     if (terminalHonorPairs.length !== 1 || singleTiles.length !== 11) {
         shantenCount = missingTiles.length
-        // it's tempai when we have all 13, but don't have a pair
-        if (terminalHonorPairs.length === 0 && singleTiles.length !== 13) {
-            shantenCount++
+        if (terminalHonorPairs.length === 0) {
+            // it could be a tempai with takni wait or n-shanten without pair
             singleTiles.forEach(tile => {
                 tilesToImprove.push(tile)
             })
@@ -352,7 +379,7 @@ function getKokushiMusoStructure(allTiles: Tile[]): HandStructureVariant | undef
     }
 }
 
-function getAllTerimalAndHonorTiles(): Tile[] {
+export function getAllTerimalAndHonorTiles(): Tile[] {
     return [
         {type: SuitType.MANZU, value: 1},
         {type: SuitType.MANZU, value: 9},
@@ -410,18 +437,18 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
     const variants: GroupingVariant[] = []
     const tile = remainingTiles[0]
 
-    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
-    if (hasPair) {
-        const newGroup: TilesGroup = [tile, tile]
+    const hasPon = hasIdenticalTiles(remainingTiles, tile, 3)
+    if (hasPon) {
+        // identical meld (222)
+        const newGroup: TilesGroup = [tile, tile, tile]
         const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
         const nextVariants = getAllVariants(nextRemaining, [newGroup])
         variants.push(...nextVariants)
     }
 
-    const hasPon = hasIdenticalTiles(remainingTiles, tile, 3)
-    if (hasPon) {
-        // identical meld (222)
-        const newGroup: TilesGroup = [tile, tile, tile]
+    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
+    if (hasPair) {
+        const newGroup: TilesGroup = [tile, tile]
         const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
         const nextVariants = getAllVariants(nextRemaining, [newGroup])
         variants.push(...nextVariants)
@@ -441,6 +468,14 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
         const hasNextNumber = tile.value < 9 && hasTiles(remainingTiles, nextTile)
         const hasNextNextNumber = tile.value < 8 && hasTiles(remainingTiles, nextNextTile)
 
+        if (hasNextNumber && hasNextNextNumber) {
+            // sequential meld (123)
+            const newGroup: TilesGroup = [tile, nextTile, nextNextTile]
+            const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
+            const nextVariants = getAllVariants(nextRemaining, [newGroup])
+            variants.push(...nextVariants)
+        }
+
         if (hasNextNumber) {
             // waits like 12_, 23_
             const newGroup: TilesGroup = [tile, nextTile]
@@ -452,14 +487,6 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant)
         if (hasNextNextNumber) {
             // waits like 1_3
             const newGroup: TilesGroup = [tile, nextNextTile]
-            const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
-            const nextVariants = getAllVariants(nextRemaining, [newGroup])
-            variants.push(...nextVariants)
-        }
-
-        if (hasNextNumber && hasNextNextNumber) {
-            // sequential meld (123)
-            const newGroup: TilesGroup = [tile, nextTile, nextNextTile]
             const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
             const nextVariants = getAllVariants(nextRemaining, [newGroup])
             variants.push(...nextVariants)
