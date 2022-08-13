@@ -1,28 +1,11 @@
-import {HandSpittingInfo, splitHand, splitInfoToString} from "../splitHand";
-import {SuitType} from "../../../core/game-types/SuitType";
-import {generateChinitsuTempai} from "../../game/generateChinitsuTempai";
+import {MeldVariant, splitHand, handInfoToString, splitToGroups, GroupingVariant} from "../splitHand";
 import {getTilesFromString} from "./testUtils";
 
-function variantsToString(variants: HandSpittingInfo[], printType: boolean = false): string[] {
-    return variants.map(x => splitInfoToString(x, printType))
-}
-
-describe('sddssd', () => {
-    it('getTiles', () => {
-        const tempai = generateChinitsuTempai(13)
-        expect(tempai.possibleTilesToWait.length > 2).toBe(true)
-        expect(tempai.hand.join('')).toBe(undefined)
-    })
-    it('check', () => {
-        const tilesStr = '1111237777889'
-        const tiles = tilesStr.split('').map(x => ({type: SuitType.MANZU, value: Number(x)}))
-        const info = splitHand(tiles)
-
-        expect(variantsToString(info, false)).toBe(undefined)
-    })
-})
-
 describe('splitHand', () => {
+    function variantsToString(variants: MeldVariant[], printType: boolean = false): string[] {
+        return variants.map(x => handInfoToString(x.melds, x.remainingTiles, printType))
+    }
+
     it('13 tiles with complicated structure', () => {
         const tiles = getTilesFromString('2225566777889m')
         const info = splitHand(tiles)
@@ -57,5 +40,44 @@ describe('splitHand', () => {
         const tiles = getTilesFromString('1112233444567z')
         const info = splitHand(tiles)
         expect(variantsToString(info)).toEqual(['111 444 2 2 3 3 5 6 7',])
+    })
+})
+
+describe('splitToGroups', () => {
+    function variantsToString(variants: GroupingVariant[], printType: boolean = false): string[] {
+        return variants.map(x => handInfoToString([...x.pairs, ...x.sequences], x.remainingTiles, printType))
+    }
+
+    it('Complicated structure', () => {
+        const tiles = getTilesFromString('11224m')
+        const variants = splitToGroups(tiles)
+        expect(variantsToString(variants)).toEqual([
+            '11 22 4',
+            '11 24 2',
+            '12 12 4',
+            '12 24 1',
+
+        ])
+    })
+    it('One suit', () => {
+        const tiles = getTilesFromString('1145m')
+        const variants = splitToGroups(tiles)
+        expect(variantsToString(variants)).toEqual([
+            '11 45',
+        ])
+    })
+    it('Different suits', () => {
+        const tiles = getTilesFromString('11m1289p24s')
+        const variants = splitToGroups(tiles)
+        expect(variantsToString(variants, true)).toEqual([
+            '11m 12p 24s 89p',
+        ])
+    })
+    it('Should find only pairs for honors', () => {
+        const tiles = getTilesFromString('1123445z')
+        const variants = splitToGroups(tiles)
+        expect(variantsToString(variants)).toEqual([
+            '11 44 2 3 5',
+        ])
     })
 })

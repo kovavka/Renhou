@@ -10,7 +10,7 @@ import {
 import {isTerminalOrHonorTile} from "../tiles/isTerminalOrHonorTile";
 import {groupIdenticalTiles} from "../tiles/groupIdenticalTiles";
 import {getBaseShantenCount} from "./getBaseShantenCount";
-import {getIncompletedMelds, HandSpittingInfo, splitHand, splitToGroups, TwoTilesGroup} from "./splitHand";
+import {getIncompletedMelds, MeldVariant, splitHand, splitToGroups, TwoTilesGroup} from "./splitHand";
 
 export enum HandStructureType {
     REGULAR,
@@ -46,7 +46,7 @@ type NextDrawInfo = {
 
 type ShantenInfo = {
     // todo maybe we don't need it?
-    splittingInfo: HandSpittingInfo
+    splittingInfo: MeldVariant
 
     structureType: HandStructureType
 
@@ -86,7 +86,7 @@ export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
     return result.sort((a, b) => a.shantenCount - b.shantenCount)
 }
 
-function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): ShantenInfo {
+function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenInfo {
     const {melds, remainingTiles} = info
 
     if (allTiles.length === 1) {
@@ -304,7 +304,7 @@ function getChiitoiStructure(allTiles: Tile[]): ShantenInfo | undefined {
         }
     }
 
-    const info: HandSpittingInfo = {
+    const info: MeldVariant = {
         melds: [],
         groups: infoGroups,
         remainingTiles: separatedTiles,
@@ -378,7 +378,7 @@ function getKokushiMusoStructure(allTiles: Tile[]): ShantenInfo | undefined {
         tilesToDiscard.push(tile)
     })
 
-    const info: HandSpittingInfo = {
+    const info: MeldVariant = {
         melds: [],
         groups: terminalHonorPairs.map(tile => [tile, tile]),
         remainingTiles: singleTiles,
