@@ -33,9 +33,9 @@ export class MahjongServiceImpl implements IMahjongService {
     start(): void {
         const newState = generateNewGame()
 
-        // this.botPlayers[Side.TOP].setHand(newState.hands[Side.TOP].tiles)
-        // this.botPlayers[Side.LEFT].setHand(newState.hands[Side.LEFT].tiles)
-        // this.botPlayers[Side.RIGHT].setHand(newState.hands[Side.RIGHT].tiles)
+        this.botPlayers[Side.TOP]?.setHand(newState.hands[Side.TOP])
+        this.botPlayers[Side.LEFT]?.setHand(newState.hands[Side.LEFT])
+        this.botPlayers[Side.RIGHT]?.setHand(newState.hands[Side.RIGHT])
 
         this.updateState(newState)
 
@@ -158,19 +158,21 @@ export class MahjongServiceImpl implements IMahjongService {
             value: drawTile.value,
         })
 
+        const newHand = {
+            ...currentHand,
+            tiles: sortTiles(newHandTiles),
+        }
+
         const botPlayer = this.botPlayers[side]
         if (botPlayer !== undefined) {
-            botPlayer.setHand(newHandTiles)
+            botPlayer.setHand(newHand)
         }
 
         return {
             ...gameState,
             hands: {
                 ...hands,
-                [side]: {
-                    ...currentHand,
-                    tiles: sortTiles(newHandTiles),
-                }
+                [side]: newHand,
             },
             currentTurn: {
                 ...currentTurn,

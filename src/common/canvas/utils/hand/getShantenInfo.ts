@@ -59,6 +59,10 @@ export type ShantenInfo = {
 // todo test waits like 3334 - should be 245
 
 export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
+    if (tiles.length !== 1 && tiles.length !== 4 && tiles.length !== 7 && tiles.length !== 10 && tiles.length !== 13) {
+        throw new Error('unsupported hand size')
+    }
+
     const handSplitVariants = splitHand(tiles)
 
     const result: ShantenInfo[] = []
@@ -83,6 +87,7 @@ export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
 }
 
 
+// todo add tests
 function getClosestTiles(tile: Tile): Tile[] {
     if (tile.type === SuitType.JIHAI) {
         return []
@@ -215,7 +220,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
         // so it order to reach tempai we need to get 1+ groups
         // e.g. [12 59] need one 1 more groups
         // [23 56 89 2] don't need any more groups
-        const needToGetMoreGroups = groupsCount <= minShantenValue
+        const needToGetMoreGroups = shantenValue !== 0 && groupsCount <= minShantenValue
 
 
         // we have too many groups and we have to discard one of them to reach tempai
@@ -227,7 +232,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
 
 
         // it's impossible to improve hand with upgrading pair to pon,
-        // when we have only sequence melds incompleted
+        // when we all others groups are sequences
         // e.g. 11 45 -> we can improve only with 36
         const canUpgradePairToMeld = pairs.length !== 1 || uselessTiles.length !== 0
 
@@ -239,6 +244,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
             if (canUpgradePairToMeld) {
                 tilesToImprove.push(pair[0])
             }
+
             if (!canDiscardPair) {
                 importantTilesToLeave.push(pair[0])
             }
@@ -249,6 +255,10 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
             if (shouldMakePairFromSeqMeld) {
                 tilesToImprove.push(tileA)
                 tilesToImprove.push(tileB)
+            } else {
+                // todo check
+                usefulDrawTiles.push(tileA)
+                usefulDrawTiles.push(tileB)
             }
             if (!canDiscardSomeGroups) {
                 importantTilesToLeave.push(tileA)
@@ -260,9 +270,9 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
 
         uselessTiles.forEach(tile => {
             if (!hasPair) {
+                // for tempai only this 1 tile will be an improvement;
+                // for shanten > 0 if we don't have a pair we can decrease shanten by creating one
                 tilesToImprove.push(tile)
-
-                // usefulDrawTiles.push(tile)
             } else {
                 if (minShantenValue !== 0) {
                     // because for tempai it will be improvement anyway (to win)

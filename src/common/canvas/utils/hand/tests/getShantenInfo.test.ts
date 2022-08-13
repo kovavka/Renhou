@@ -1,5 +1,4 @@
 import {getAllTerimalAndHonorTiles, getShantenInfo, HandStructureType} from "../getShantenInfo";
-import {hasTempai} from "../hasTempai";
 import {hasTiles} from "../../tiles/tileContains";
 import {sortTiles} from "../../game/sortTiles";
 import {getTilesFromString} from "./testUtils";
@@ -16,6 +15,10 @@ describe('getShantenInfo', () => {
                 expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
                 expect(shantenInfo[0].nextDrawInfo.canReplace).toEqual([{type: SuitType.JIHAI, value: 5}])
                 expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.JIHAI, value: 5}])
+                expect(shantenInfo[0].nextDrawInfo.toLeave).toEqual([
+
+                ])
+                expect(shantenInfo[0].nextDrawInfo.canDraw).toEqual([])
             })
         })
          describe('5 pairs and group of 3 tiles', () => {
@@ -174,14 +177,63 @@ describe('getShantenInfo', () => {
             expect(shantenInfo[0].nextDrawInfo.canReplace).toEqual([{type: SuitType.MANZU, value: 9}])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 9}])
         })
-        it('Should get 3 waits for tiles 3334', () => {
+        it('Should get 3 waits for hand like 3334', () => {
             const tiles = getTilesFromString('3334m')
             const shantenInfo = getShantenInfo(tiles)
+
+            // todo doesn't work properly with compicated waits
 
             expect(shantenInfo[0].value).toBe(0)
             expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.canReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 2}, {type: SuitType.MANZU, value: 4}, {type: SuitType.MANZU, value: 5}])
+        })
+        it('Should get 2 waits for hand like 3555', () => {
+            const tiles = getTilesFromString('3555m')
+            const shantenInfo = getShantenInfo(tiles)
+
+            // todo doesn't work properly with compicated waits
+
+            expect(shantenInfo[0].value).toBe(0)
+            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
+            expect(shantenInfo[0].nextDrawInfo.canReplace).toEqual([{type: SuitType.MANZU, value: 3}])
+            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 3}, {type: SuitType.MANZU, value: 4}])
+        })
+        it('Should get 5 possible improvements for part like 3555m', () => {
+            const tiles = getTilesFromString('3555m149s')
+            const shantenInfo = getShantenInfo(tiles)
+
+            expect(shantenInfo[0].value).toBe(2)
+            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
+            expect(shantenInfo[0].nextDrawInfo.toLeave).toEqual([])
+            expect(shantenInfo[0].nextDrawInfo.canDraw).toEqual([])
+
+            const separatedTiles = [
+                {type: SuitType.MANZU, value: 3},
+                {type: SuitType.SOUZU, value: 1},
+                {type: SuitType.SOUZU, value: 4},
+                {type: SuitType.SOUZU, value: 9},
+            ]
+            expect(shantenInfo[0].nextDrawInfo.canReplace).toEqual(separatedTiles)
+
+            const improvements = [
+                {type: SuitType.MANZU, value: 1},
+                {type: SuitType.MANZU, value: 2},
+                {type: SuitType.MANZU, value: 3},
+                {type: SuitType.MANZU, value: 4},
+                {type: SuitType.MANZU, value: 5},
+
+                {type: SuitType.SOUZU, value: 1},
+                {type: SuitType.SOUZU, value: 2},
+                {type: SuitType.SOUZU, value: 3},
+                {type: SuitType.SOUZU, value: 4},
+                {type: SuitType.SOUZU, value: 5},
+                {type: SuitType.SOUZU, value: 6},
+                {type: SuitType.SOUZU, value: 7},
+                {type: SuitType.SOUZU, value: 8},
+                {type: SuitType.SOUZU, value: 9},
+            ]
+            expect(sortTiles(shantenInfo[0].nextDrawInfo.improvements)).toEqual(improvements)
         })
         it('Should be 3 shanten for 3 groups + separated tile', () => {
             const tiles = getTilesFromString('1256m129s')
