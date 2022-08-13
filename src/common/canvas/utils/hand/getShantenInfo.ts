@@ -486,20 +486,25 @@ export function getAllGroupsForTile(tile: Tile, remainingTiles: Tile[]): (MeldTi
 // }
 
 export function test2(allTiles: Tile[]): HandSpittingInfo[] {
-   const variants: HandSpittingInfo[] = []
+    if (allTiles.length === 0) {
+        return []
+    }
 
-    for (let i = 0; i < allTiles.length; i++) {
+    const variants: HandSpittingInfo[] = []
+    // const separatedTiles: Tile[] = []
+
+    for (let i = 0; i < allTiles.length && allTiles.length > 1; i++) {
         const tile = allTiles[i]
-        const previousTiles = i > 0 ? allTiles.slice(0, i - 1) : []
         const allPossibleGroups = getAllGroupsForTile(tile, allTiles)
 
-        const groupVariants = []
+        const groupVariants: HandSpittingInfo[] = []
         allPossibleGroups.forEach(group => {
-            const remainingTiles: Tile[] = [...previousTiles, ...excludeTiles(allTiles, ...group)]
+            const remainingTiles: Tile[] = excludeTiles(allTiles, ...group)
             const nextVariants = test2(remainingTiles)
 
             const melds: MeldTileGroup[] = group.length === 3  ? [group] : []
             const meldsToComplete: TwoTilesGroup[] = group.length === 2 ? [group] : []
+
 
             nextVariants.forEach(info => {
                 const melds: MeldTileGroup[] = []
@@ -510,7 +515,7 @@ export function test2(allTiles: Tile[]): HandSpittingInfo[] {
                     meldsToComplete.push(group)
                 }
 
-                variants.push({
+                groupVariants.push({
                     melds: [...melds, ...info.melds],
                     groups: [...meldsToComplete, ...info.groups],
                     separatedTiles: info.separatedTiles
@@ -518,7 +523,7 @@ export function test2(allTiles: Tile[]): HandSpittingInfo[] {
             })
 
             if (nextVariants.length === 0) {
-                variants.push({
+                groupVariants.push({
                     melds,
                     groups: meldsToComplete,
                     separatedTiles: []
@@ -526,18 +531,27 @@ export function test2(allTiles: Tile[]): HandSpittingInfo[] {
             }
         })
         if (allPossibleGroups.length === 0) {
-            variants.forEach(variant => {
-                variant.separatedTiles.push(tile)
-            })
-            if (variants.length === 0) {
-                variants.push({
-                    melds: [],
-                    groups: [],
-                    separatedTiles: [tile],
-                })
-            }
+            // if (variants.length === 0) {
+            //     separatedTiles.push(tile)
+            // }
+        } else {
+            variants.push(...groupVariants)
         }
     }
+
+    if (variants.length === 0) {
+        return [{
+            melds: [],
+            groups: [],
+            separatedTiles: allTiles,
+        }]
+    }
+
+    // if (separatedTiles.length > 0) {
+    //     variants.forEach(variant => {
+    //         variant.separatedTiles.push(...separatedTiles)
+    //     })
+    // }
 
     return variants
 }
