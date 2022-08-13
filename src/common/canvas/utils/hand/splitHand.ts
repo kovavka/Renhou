@@ -1,24 +1,28 @@
 import {Tile} from "../../core/game-types/Tile";
-import {excludeTiles, hasIdenticalTiles, hasTiles, isTheSameTile} from "../tiles/tileContains";
+import {excludeTiles, hasIdenticalTiles, hasTiles} from "../tiles/tileContains";
 import {SuitType} from "../../core/game-types/SuitType";
-import isEqual from "lodash/isEqual";
+import {sortTiles} from "../game/sortTiles";
 
 export type MeldTileGroup = [Tile, Tile, Tile]
 export type TwoTilesGroup = [Tile, Tile] // pair or 2/3 sequential meld tiles
 export type SingleTileGroup = [Tile]
 
-type TileGroup = MeldTileGroup | TwoTilesGroup | SingleTileGroup
+type TileGroup = MeldTileGroup | SingleTileGroup
 type SplittingVariant = TileGroup[]
 
 export type HandSpittingInfo = {
     melds: MeldTileGroup[]
 
-    groups: TwoTilesGroup[]
-
     /**
-     * tiles we can not use to complete melds
+     * tiles we are not using in melds
      */
-    separatedTiles: Tile[]
+    remainingTiles: Tile[]
+}
+
+type GroupingVariant = {
+    sequence: TwoTilesGroup[]
+    pairs: TwoTilesGroup[]
+    remainingTiles: Tile[]
 }
 
 const TILE_TYPES = {
@@ -34,39 +38,26 @@ export function splitHand(all: Tile[]): HandSpittingInfo[] {
     const result: HandSpittingInfo[] = []
     allVariants.forEach((groupingVariant) => {
         const melds: MeldTileGroup[] = []
-        const separatedTiles: Tile[] = []
-        const meldsToComplete: TwoTilesGroup[] = []
+        const remainingTiles: Tile[] = []
 
         groupingVariant.forEach(group => {
             if (group.length === 3) {
                 melds.push(group)
-            } else if (group.length === 2) {
-                meldsToComplete.push(group)
             } else {
-                separatedTiles.push(group[0])
+                remainingTiles.push(group[0])
             }
         })
 
-        const hasSplitMelds = separatedTiles.some(x => {
-            return meldsToComplete.some(y => isMeld([x, y[0], y[1]]))
-        })
+        const newInfo: HandSpittingInfo = {
+            melds,
+            remainingTiles,
+        }
 
-        // we don't need variants where we split groups and melds to separated tiles
-        const isSplitTooMuch = hasGroups(separatedTiles) || hasSplitMelds
+        // we might have duplicates for complicated hand like chinitsu
+        const alreadyAdded = result.some(x => splitInfoToString(x) === splitInfoToString(newInfo))
 
-        if (!isSplitTooMuch) {
-            const newInfo = {
-                melds,
-                separatedTiles,
-                groups: meldsToComplete,
-            }
-
-            // we might have duplicates for complicated hand like chinitsu
-            const alreadyAdded = result.some(x => splitInfoToString(x) === splitInfoToString(newInfo))
-
-            if (!alreadyAdded) {
-                result.push(newInfo)
-            }
+        if (!alreadyAdded) {
+            result.push(newInfo)
         }
     })
 
@@ -85,117 +76,94 @@ function tileToString(tile: Tile, printType: boolean): string {
 
 export function splitInfoToString(info: HandSpittingInfo, printType: boolean = false): string {
     const melds = info.melds.map(x => groupToString(x, printType))
-    const groups = info.groups.map(x => groupToString(x, printType))
-    const separatedTiles = info.separatedTiles.map(x => tileToString(x, printType))
+    const separatedTiles = sortTiles(info.remainingTiles).map(x => tileToString(x, printType))
 
     const all = []
     if (melds.length) all.push(...melds)
-    if (groups.length) all.push(...groups)
     if (separatedTiles.length) all.push(...separatedTiles)
 
-    return [...melds, ...groups, ...separatedTiles].sort().join(' ')
+    return [...melds.sort(), ...separatedTiles].join(' ')
 }
 
-function hasGroups(allTiles: Tile[]): boolean {
-    if (allTiles.length <= 1) {
-        return false
+function getNextTilesForSequence(tile: Tile): SingleTileGroup | TwoTilesGroup | undefined {
+    if (tile.type === SuitType.JIHAI) {
+        return undefined
     }
 
-    return allTiles.some(tile => getAllGroupsForTile(tile, allTiles).length > 0)
-}
-
-function isMeld(tiles: MeldTileGroup): boolean {
-    if (tiles[0].type !== tiles[1].type || tiles[0].type !== tiles[2].type) {
-        return false
+    const nextTile = {
+        type: tile.type,
+        value: tile.value + 1,
     }
 
-    if (hasIdenticalTiles(tiles, tiles[0], 3)) {
-        // pon
-        return true
+    const nextNextTile = {
+        type: tile.type,
+        value: tile.value + 2,
     }
 
-    if (tiles[0].type === SuitType.JIHAI) {
-        return false
+    if (tile.value <= 7) {
+        return [nextTile, nextNextTile]
+    } else if (tile.value <= 8) {
+        return [nextTile]
     }
 
-    const sorted = tiles.sort()
-    return sorted[2].value - sorted[1].value === 1 && sorted[1].value - sorted[0].value === 1
-}
-
-function getAllGroupsForTile(tile: Tile, remainingTiles: Tile[]): (MeldTileGroup | TwoTilesGroup)[] {
-    const groups: (MeldTileGroup | TwoTilesGroup)[] = []
-
-    const hasPon = hasIdenticalTiles(remainingTiles, tile, 3)
-    if (hasPon) {
-        groups.push([tile, tile, tile])
-    }
-
-    const isNumberedSuit = tile.type !== SuitType.JIHAI
-    if (isNumberedSuit) {
-        // sequential meld (123)
-        const nextTile = {
-            type: tile.type,
-            value: tile.value + 1,
-        }
-        const nextNextTile = {
-            type: tile.type,
-            value: tile.value + 2,
-        }
-
-        const hasNextNumber = tile.value < 9 && hasTiles(remainingTiles, nextTile)
-        const hasNextNextNumber = tile.value < 8 && hasTiles(remainingTiles, nextNextTile)
-        const hasSequentialMeld = hasNextNumber && hasNextNextNumber // like 123
-
-        if (hasSequentialMeld) {
-            groups.push([tile, nextTile, nextNextTile])
-        } else if (!hasPon) {
-            if (hasNextNumber) {
-                // waits like 12_, 23_
-                groups.push([tile, nextTile])
-            }
-
-            if (hasNextNextNumber) {
-                // waits like 1_3
-                groups.push([tile, nextNextTile])
-            }
-        }
-    }
-
-    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
-    if (hasPair && !hasPon) {
-        groups.push([tile, tile])
-    }
-
-    return groups
+    return undefined
 }
 
 /**
- * Get all possible variation of hand developing
+ * only 1 group because we won't have any melds in remaining tiles after splitting
  */
-function getAllVariants(remainingTiles: Tile[], currentVariant: SplittingVariant): SplittingVariant[] {
-    if (remainingTiles.length === 0) {
-        return [currentVariant]
+function getSequentialGroup(tile: Tile, remainingTiles: Tile[]): TwoTilesGroup | undefined {
+    const nextTilesForSequence = getNextTilesForSequence(tile)
+    if (nextTilesForSequence === undefined) {
+        return undefined
     }
 
-    const tile = remainingTiles[0]
-    const variants: SplittingVariant[] = []
+    const [tile2] = nextTilesForSequence
+    if (hasTiles(remainingTiles, tile2)) {
+        // waits like 12_, 23_
+        return [tile, tile2]
+    }
 
+    if (nextTilesForSequence.length === 2) {
+        const [, tile3] = nextTilesForSequence
+        if (hasTiles(remainingTiles, tile3)) {
+            // waits like 1_3
+            return [tile, tile3]
+        }
+    }
 
-    const allPossibleGroups: TileGroup[] = getAllGroupsForTile(tile, remainingTiles)
-
-    // just 1 separated tile
-    allPossibleGroups.push([tile])
-
-    allPossibleGroups.forEach(group => {
-        const nextRemaining: Tile[] = excludeTiles(remainingTiles, ...group)
-        const nextVariants = getAllVariants(nextRemaining, [group])
-        variants.push(...nextVariants)
-    })
-
-    return variants.map(variant => currentVariant.concat(variant))
+    return undefined
 }
 
-export function splitTiles(allTiles: Tile[]): SplittingVariant[] {
+function getPair(tile: Tile, remainingTiles: Tile[]): TwoTilesGroup | undefined {
+    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
+    if (hasPair) {
+        return [tile, tile]
+    }
+    return undefined
+}
+
+function getAllMeldsForTile(tile: Tile, remainingTiles: Tile[]): MeldTileGroup[] {
+    const melds: MeldTileGroup[] = []
+
+    const hasPon = hasIdenticalTiles(remainingTiles, tile, 3)
+    if (hasPon) {
+        melds.push([tile, tile, tile])
+    }
+
+    const nextTilesForSequence = getNextTilesForSequence(tile)
+    if (nextTilesForSequence !== undefined && nextTilesForSequence.length === 2) {
+        const [tile2, tile3] = nextTilesForSequence
+        if (hasTiles(remainingTiles, tile2) && hasTiles(remainingTiles, tile3)) {
+            // sequential meld (123)
+            melds.push([tile, tile2, tile3])
+        }
+    }
+
+    return melds
+}
+
+function splitTiles(allTiles: Tile[]): SplittingVariant[] {
     if (allTiles.length === 0) {
         return []
     }
@@ -204,14 +172,13 @@ export function splitTiles(allTiles: Tile[]): SplittingVariant[] {
 
     for (let i = 0; i < allTiles.length && allTiles.length > 1; i++) {
         const tile = allTiles[i]
-        const allPossibleGroups = getAllGroupsForTile(tile, allTiles)
+        const allPossibleMelds = getAllMeldsForTile(tile, allTiles)
 
         const groupVariants: SplittingVariant[] = []
 
-        allPossibleGroups.forEach(group => {
+        allPossibleMelds.forEach(group => {
             const remainingTiles: Tile[] = excludeTiles(allTiles, ...group)
             const nextVariants = splitTiles(remainingTiles)
-
 
             if (nextVariants.length === 0) {
                 groupVariants.push([group])
@@ -227,6 +194,70 @@ export function splitTiles(allTiles: Tile[]): SplittingVariant[] {
 
     if (variants.length === 0) {
         return [allTiles.map(x => [x])]
+    }
+
+    return variants
+}
+
+
+function getAllGroupsForTile(tile: Tile, remainingTiles: Tile[]): TwoTilesGroup[] {
+    const groups: TwoTilesGroup[] = []
+
+    const pair = getPair(tile, remainingTiles)
+    if (pair !== undefined) {
+        groups.push(pair)
+    }
+
+    const sequentialGroup = getSequentialGroup(tile, remainingTiles)
+    if (sequentialGroup !== undefined) {
+        groups.push(sequentialGroup)
+    }
+
+    return []
+}
+
+/**
+ * split remaining tiles to pairs and unfinished sequential melds
+ */
+export function splitToGroups(allTiles: Tile[]): GroupingVariant[] {
+    if (allTiles.length === 0) {
+        return []
+    }
+
+    const variants: GroupingVariant[] = []
+
+    for (let i = 0; i < allTiles.length && allTiles.length > 1; i++) {
+        const tile = allTiles[i]
+        const allPossibleGroups = getAllGroupsForTile(tile, allTiles)
+
+        const combinedGroups: TwoTilesGroup[] = []
+        const singleTiles: Tile[] = []
+
+        allPossibleGroups.forEach(group => {
+            const remainingTiles: Tile[] = excludeTiles(allTiles, ...group)
+            const nextVariants = splitToGroups(remainingTiles)
+
+            if (nextVariants.length === 0) {
+                combinedGroups.push(group)
+            } else {
+                nextVariants.forEach(variant => {
+                    combinedGroups.push(...variant.groups)
+                    singleTiles.push(...variant.remainingTiles)
+                })
+            }
+        })
+
+        variants.push({
+            groups: combinedGroups,
+            remainingTiles: singleTiles,
+        })
+    }
+
+    if (variants.length === 0) {
+        return [{
+            groups: [],
+            remainingTiles: allTiles,
+        }]
     }
 
     return variants

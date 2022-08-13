@@ -15,6 +15,8 @@ export class EasyBotPlayer implements IBotPlayer {
 
     chooseTile(drawTile: DrawTile): Tile | undefined {
         const minShantenCount = this.shantenInfo[0].shantenCount
+        // todo if 0 call tsumo
+
         // const toDiscard: Tile[] = []
 
         // we can check han and fu as well
