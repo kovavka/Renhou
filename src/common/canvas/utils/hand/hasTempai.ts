@@ -7,5 +7,5 @@ export function hasTempai(tiles: Tile[]): boolean {
     }
 
     const shantenInfo = getShantenInfo(tiles)
-    return shantenInfo.some(x => x.shantenCount === 0)
+    return shantenInfo.some(x => x.value === 0)
 }

@@ -1,15 +1,10 @@
 import {Tile} from "../../core/game-types/Tile";
 import {SuitType} from "../../core/game-types/SuitType";
-import {
-    getIdenticalTileCount,
-    excludeTiles,
-    getUniqueTiles,
-    hasIdenticalTiles, hasTiles,
-    isTheSameTile
-} from "../tiles/tileContains";
+import {getIdenticalTileCount, getUniqueTiles, hasTiles} from "../tiles/tileContains";
 import {isTerminalOrHonorTile} from "../tiles/isTerminalOrHonorTile";
 import {groupIdenticalTiles} from "../tiles/groupIdenticalTiles";
 import {getBaseShantenCount} from "./getBaseShantenCount";
+import {MeldVariant, splitHand, splitToGroups} from "./splitHand";
 
 export enum HandStructureType {
     REGULAR,
@@ -17,200 +12,292 @@ export enum HandStructureType {
     KOKUSHI_MUSO,
 }
 
-type HandStructureVariant = {
+// todo calculate most useless tile in hand by hand + draw tile
+
+type NextDrawInfo = {
+    /**
+     * tiles player can get to decrease shanten
+     */
+    improvements: Tile[]
+
+    /**
+     * useful tiles player can get without shanten changing
+     */
+    canDraw: Tile[]
+
+    /**
+     * tiles player can replace without shanten changing
+     */
+    canReplace: Tile[]
+
+    /**
+     * tiles player should discard to complete chiitoi or kokushi muso
+     */
+    toDiscard: Tile[]
+
+    /**
+     * tiles player can NOT discard without shanten increasing
+     * todo won't work for chiitoi and kokushi muso -> fix or add a comment if it should stay this way
+     */
+    toLeave: Tile[]
+}
+
+export type ShantenInfo = {
     // todo maybe we don't need it?
-    splittingInfo: HandSpittingInfo
+    splittingInfo: MeldVariant
 
     structureType: HandStructureType
 
-    /**
-     * tiles player can get to increase shanten count
-     */
-    tilesToImprove: Tile[]
+    nextDrawInfo: NextDrawInfo
 
     /**
-     * tiles player can replace without shanten changing (especially decrease)
+     *  number of tiles needed for reaching tempai
      */
-    possibleReplacements: Tile[]
-
-    /**
-     * tiles player have to discard to complete chiitoi or kokushi muso
-     */
-    tilesToDiscard: Tile[]
-
-    shantenCount: number
+    value: number
 }
-
-type MeldTileGroup = [Tile, Tile, Tile]
-type TwoTilesGroup = [Tile, Tile] // pair or 2/3 sequential meld tiles
-type SingleTileGroup = [Tile]
-
-type HandSpittingInfo = {
-    melds: MeldTileGroup[]
-
-    groups: (TwoTilesGroup)[]
-
-    /**
-     * tiles we can not use to complete melds
-     */
-    separatedTiles: Tile[]
-}
-
 
 // todo when it's 0 shanten and tanki wait we have tile to replace
 
-export function getShantenInfo(tiles: Tile[]): HandStructureVariant[] {
-    const handSplitVariants = processTiles(tiles)
+// todo test waits like 3334 - should be 245
 
-    const result: HandStructureVariant[] = []
+export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
+    const handSplitVariants = splitHand(tiles)
+
+    const result: ShantenInfo[] = []
 
     handSplitVariants.forEach(info => {
         const regular = getRegularHandStructure(info, tiles)
         result.push(regular)
     })
 
-    const kokushiMuso = getKokushiMusoStructure(tiles)
-    if (kokushiMuso !== undefined && kokushiMuso.shantenCount < 7) {
-        result.push(kokushiMuso)
+    const kokushiMusoInfo = getKokushiMusoInfo(tiles)
+    if (kokushiMusoInfo !== undefined && kokushiMusoInfo.value < 7) {
+        result.push(kokushiMusoInfo)
     }
 
-    const chiitoi = getChiitoiStructure(tiles)
-    if (chiitoi !== undefined) {
-        result.push(chiitoi)
+    const chiitoiInfo = getChiitoiInfo(tiles)
+    if (chiitoiInfo !== undefined) {
+        result.push(chiitoiInfo)
     }
 
-    return result.sort((a, b) => a.shantenCount - b.shantenCount)
+    // todo maybe remove sort?
+    return result.sort((a, b) => a.value - b.value)
 }
 
-function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): HandStructureVariant {
-    const {melds, groups, separatedTiles} = info
+
+function getClosestTiles(tile: Tile): Tile[] {
+    if (tile.type === SuitType.JIHAI) {
+        return []
+    }
+
+    const tilesToImprove: Tile[] = []
+
+    if (tile.value >= 2) {
+        // ryanmen _32_
+        // penchan 21_
+        tilesToImprove.push({
+            type: tile.type,
+            value: tile.value - 1
+        })
+    }
+
+    if (tile.value >= 3) {
+        // kanchan 3_1
+        tilesToImprove.push({
+            type: tile.type,
+            value: tile.value - 2
+        })
+    }
+
+    if (tile.value <= 7) {
+        // kanchan 7_9
+        tilesToImprove.push({
+            type: tile.type,
+            value: tile.value + 2
+        })
+    }
+
+    if (tile.value <= 8) {
+        // ryanmen _78_
+        // penchan _89
+        tilesToImprove.push({
+            type: tile.type,
+            value: tile.value + 1
+        })
+    }
+
+    return tilesToImprove
+}
+
+function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): Tile[] {
+    const tilesToImprove: Tile[] = []
+    const minValue =  Math.min(tileA.value, tileB.value)
+    const maxValue =  Math.max(tileA.value, tileB.value)
+    if ((maxValue - minValue) === 2) {
+        // kanchan 1_3
+        tilesToImprove.push({
+            type: tileA.type,
+            value: minValue + 1
+        })
+    } else if (minValue === 1) {
+        // penchan 12_
+        tilesToImprove.push({
+            type: tileB.type,
+            value: maxValue + 1
+        })
+    } else if (maxValue === 9) {
+        // penchan _89
+        tilesToImprove.push({
+            type: tileA.type,
+            value: minValue - 1
+        })
+    } else {
+        // ryanmen _23_
+        tilesToImprove.push({
+            type: tileA.type,
+            value: minValue - 1
+        })
+        tilesToImprove.push({
+            type: tileB.type,
+            value: maxValue + 1
+        })
+    }
+
+    return tilesToImprove
+}
+
+function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenInfo {
+    const {melds, remainingTiles} = info
 
     if (allTiles.length === 1) {
         return {
             splittingInfo: info,
             structureType: HandStructureType.REGULAR,
-            tilesToImprove: [],
-            possibleReplacements: separatedTiles,
-            tilesToDiscard: [],
-            shantenCount: 0,
+            nextDrawInfo: {
+                improvements: remainingTiles,
+                canDraw: [],
+                canReplace: remainingTiles,
+                toDiscard: [],
+                // it's just one tile and we can replace it
+                toLeave: [],
+            },
+            value: 0,
         }
     }
 
-    const pairs = groups.filter(x => isTheSameTile(x[0], x[1]))
-    const hasPair = pairs.length > 0
+    let minShantenValue = 6
 
-    const shantenCount = getBaseShantenCount(allTiles.length, melds.length, groups.length, hasPair)
+    const groupingVariants = splitToGroups(info.remainingTiles)
 
-    const tilesToDiscard: Tile[] = []
+    groupingVariants.forEach(variant => {
+        const {pairs, sequences} = variant
+
+        const shantenValue = getBaseShantenCount(allTiles.length, melds.length, sequences.length + pairs.length, pairs.length > 0)
+        minShantenValue = Math.min(shantenValue, minShantenValue)
+    })
+
     const tilesToImprove: Tile[] = []
     const possibleReplacements: Tile[] = []
+    const usefulDrawTiles: Tile[] = [] // todo should we add more tiles here?
+    const importantTilesToLeave: Tile[] = []
+
+    groupingVariants.forEach(variant => {
+        const {pairs, sequences, uselessTiles} = variant
+        const hasPair = pairs.length > 0
+        const groupsCount = sequences.length + pairs.length
 
 
-    const maxMeldsToComplete = Math.floor(allTiles.length / 3) - melds.length
-    const canDiscardSomeMelds = maxMeldsToComplete > groups.length
-    const needToGetMoreGroups = groups.length < shantenCount
+        const shantenValue = getBaseShantenCount(allTiles.length, melds.length, groupsCount, pairs.length > 0)
+        if (shantenValue > minShantenValue) {
+            return // todo maybe we should also check improvements for variants with shanten - 1?
+        }
 
 
-    // it's impossible to improve hand using 3rd tile for pair, when we have incompleted sequence meld,
-    // e.g. 11 45 -> we can improve only with 36
-    const canUpgradePairToMeld = pairs.length !== 1 || separatedTiles.length !== 0
+        // we don't have enough groups when shanten >= groups length,
+        // so it order to reach tempai we need to get 1+ groups
+        // e.g. [12 59] need one 1 more groups
+        // [23 56 89 2] don't need any more groups
+        const needToGetMoreGroups = groupsCount <= minShantenValue
 
-    // when we have only sequence groups we should beak one of them to make a pair
-    //  e.g. 13 45 -> we need a pair for one of these tiles
-    const shouldMakePairFromSeqMeld = !hasPair && separatedTiles.length === 0
 
-    groups.forEach(group => {
-        const [tileA, tileB] = group
+        // we have too many groups and we have to discard one of them to reach tempai
+        // BUT we shouldn't discard pair if it's the only one
+        // e.g. [23 56 89 2], 3 < 2 -> can discard
+        // [12 45 78 12 5 9], 4 >= 4 -> can not discard
+        const canDiscardSomeGroups = groupsCount > minShantenValue
+        const canDiscardPair = canDiscardSomeGroups && pairs.length > 1
 
-        if (isTheSameTile(tileA, tileB)) {
+
+        // it's impossible to improve hand with upgrading pair to pon,
+        // when we have only sequence melds incompleted
+        // e.g. 11 45 -> we can improve only with 36
+        const canUpgradePairToMeld = pairs.length !== 1 || uselessTiles.length !== 0
+
+        // when we have only sequence groups we could make a pair from one of them
+        //  e.g. 13 45 -> we need a pair for one of these tiles
+        const shouldMakePairFromSeqMeld = !hasPair && uselessTiles.length === 0
+
+        pairs.forEach(pair => {
             if (canUpgradePairToMeld) {
-                tilesToImprove.push(tileA)
+                tilesToImprove.push(pair[0])
             }
-        } else {
-            // sequence meld
+            if (!canDiscardPair) {
+                importantTilesToLeave.push(pair[0])
+            }
+        })
 
+        sequences.forEach(sequence => {
+            const [tileA, tileB] = sequence
             if (shouldMakePairFromSeqMeld) {
                 tilesToImprove.push(tileA)
                 tilesToImprove.push(tileB)
             }
+            if (!canDiscardSomeGroups) {
+                importantTilesToLeave.push(tileA)
+                importantTilesToLeave.push(tileB)
+            }
 
-            const minValue =  Math.min(tileA.value, tileB.value)
-            const maxValue =  Math.max(tileA.value, tileB.value)
-            if ((maxValue - minValue) === 2) {
-                // kanchan 1_3
-                tilesToImprove.push({
-                    type: tileA.type,
-                    value: minValue + 1
-                })
-            } else if (minValue === 1) {
-                // penchan 12_
-                tilesToImprove.push({
-                    type: tileA.type,
-                    value: maxValue + 1
-                })
-            } else if (maxValue === 9) {
-                // penchan _89
-                tilesToImprove.push({
-                    type: tileA.type,
-                    value: minValue - 1
-                })
+            tilesToImprove.push(...getTilesToCompleteSequence(tileA, tileB))
+        })
+
+        uselessTiles.forEach(tile => {
+            if (!hasPair) {
+                tilesToImprove.push(tile)
+
+                // usefulDrawTiles.push(tile)
             } else {
-                // ryanmen 23
-                tilesToImprove.push({
-                    type: tileA.type,
-                    value: minValue - 1
-                })
-                tilesToImprove.push({
-                    type: tileA.type,
-                    value: maxValue + 1
-                })
-            }
-        }
-
-        if (canDiscardSomeMelds) {
-            tilesToDiscard.push(tileA)
-            tilesToDiscard.push(tileB)
-        }
-    })
-
-    separatedTiles.forEach(tile => {
-        if (!hasPair) {
-            tilesToImprove.push(tile)
-            possibleReplacements.push(tile)
-        } else if (needToGetMoreGroups) {
-            tilesToImprove.push(tile)
-            if (tile.type !== SuitType.JIHAI) {
-                if (tile.value > 1) {
-                    tilesToImprove.push({
-                        type: tile.type,
-                        value: tile.value + 1
-                    })
-                }
-                if (tile.value < 9) {
-                    tilesToImprove.push({
-                        type: tile.type,
-                        value: tile.value - 1
-                    })
+                if (minShantenValue !== 0) {
+                    // because for tempai it will be improvement anyway (to win)
+                    usefulDrawTiles.push(tile)
                 }
             }
 
             possibleReplacements.push(tile)
-        } else {
-            tilesToDiscard.push(tile)
-        }
+
+            if (needToGetMoreGroups) {
+                tilesToImprove.push(tile)
+                tilesToImprove.push(...getClosestTiles(tile))
+            }
+        })
     })
+
+
 
     return {
         splittingInfo: info,
         structureType: HandStructureType.REGULAR,
-        tilesToImprove: getUniqueTiles(tilesToImprove),
-        possibleReplacements,
-        tilesToDiscard,
-        shantenCount,
+        nextDrawInfo: {
+            improvements: getUniqueTiles(tilesToImprove),
+            canDraw: usefulDrawTiles,
+            canReplace: possibleReplacements,
+            toDiscard: [],
+            toLeave: getUniqueTiles(importantTilesToLeave),
+        },
+        value: minShantenValue,
     }
 }
 
-function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined {
+function getChiitoiInfo(allTiles: Tile[]): ShantenInfo | undefined {
     if (allTiles.length !== 13) {
         return undefined
     }
@@ -238,26 +325,18 @@ function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined
         shantenCount++
     }
 
-    const infoGroups: (TwoTilesGroup)[] = []
-    const separatedTiles: Tile[] = []
+    const pairs: Tile[] = []
 
     for(const group of identicalGroups) {
         if (group.count === 2) {
-            infoGroups.push([group.tile, group.tile])
-        } if (group.count > 2) {
+            pairs.push(group.tile)
+        } else if (group.count > 2) {
             tilesToDiscard.push(group.tile)
-
-            separatedTiles.push(group.tile)
-            if (group.count === 4) {
-                separatedTiles.push(group.tile)
-            }
         } else if (group.count === 1) {
             // if player gets pair, it will increase shanten
             tilesToImprove.push(group.tile)
-            // if player replaces tile, it won't affect shanten
+            // if player replaces unique tile, it won't affect shanten
             possibleReplacements.push(group.tile)
-
-            separatedTiles.push(group.tile)
         }
     }
 
@@ -288,25 +367,25 @@ function getChiitoiStructure(allTiles: Tile[]): HandStructureVariant | undefined
         }
     }
 
-    const info: HandSpittingInfo = {
-        melds: [],
-        groups: infoGroups,
-        separatedTiles,
-    }
-
-    // todo test size in info = 13
 
     return {
-        splittingInfo: info,
+        splittingInfo: {
+            melds: [],
+            remainingTiles: allTiles,
+        },
         structureType: HandStructureType.CHIITOI,
-        tilesToImprove,
-        possibleReplacements,
-        tilesToDiscard,
-        shantenCount,
+        nextDrawInfo: {
+            improvements: getUniqueTiles(tilesToImprove),
+            canDraw: [],
+            canReplace: possibleReplacements,
+            toDiscard: tilesToDiscard,
+            toLeave: pairs,
+        },
+        value: shantenCount,
     }
 }
 
-function getKokushiMusoStructure(allTiles: Tile[]): HandStructureVariant | undefined {
+function getKokushiMusoInfo(allTiles: Tile[]): ShantenInfo | undefined {
     if (allTiles.length !== 13) {
         return undefined
     }
@@ -362,20 +441,20 @@ function getKokushiMusoStructure(allTiles: Tile[]): HandStructureVariant | undef
         tilesToDiscard.push(tile)
     })
 
-    const info: HandSpittingInfo = {
-        melds: [],
-        groups: terminalHonorPairs.map(tile => [tile, tile]),
-        separatedTiles: singleTiles,
-    }
-    // todo test size in info = 13
-
     return {
-        splittingInfo: info,
+        splittingInfo: {
+            melds: [],
+            remainingTiles: allTiles,
+        },
         structureType: HandStructureType.KOKUSHI_MUSO,
-        tilesToImprove,
-        possibleReplacements: [],
-        tilesToDiscard,
-        shantenCount,
+        nextDrawInfo: {
+            improvements: tilesToImprove,
+            canDraw: [],
+            canReplace: [],
+            toDiscard: tilesToDiscard,
+            toLeave: singleTiles,
+        },
+        value: shantenCount,
     }
 }
 
@@ -397,109 +476,3 @@ export function getAllTerimalAndHonorTiles(): Tile[] {
     ]
 }
 
-function processTiles(all: Tile[]): HandSpittingInfo[] {
-    const allVariants = getAllVariants(all, [])
-    return allVariants.map((groupingVariant) => {
-        const melds: MeldTileGroup[] = []
-        const separatedTiles: Tile[] = []
-        const meldsToComplete: TwoTilesGroup[] = []
-
-        groupingVariant.forEach(group => {
-            if (group.length === 3) {
-                melds.push(group)
-            } else if (group.length === 2) {
-                meldsToComplete.push(group)
-            } else {
-                separatedTiles.push(group[0])
-            }
-        })
-
-        return {
-            melds,
-            separatedTiles,
-            groups: meldsToComplete,
-        }
-    })
-}
-
-type TilesGroup = MeldTileGroup | TwoTilesGroup | SingleTileGroup
-type GroupingVariant = TilesGroup[]
-
-/**
- * Get all possible variation of hand developing in current suit.
- * Separated tiles will be added to result only if they are not a part of any group
- */
-function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant): GroupingVariant[] {
-    if (remainingTiles.length === 0) {
-       return [currentVariant]
-    }
-
-    const variants: GroupingVariant[] = []
-    const tile = remainingTiles[0]
-
-    const hasPon = hasIdenticalTiles(remainingTiles, tile, 3)
-    if (hasPon) {
-        // identical meld (222)
-        const newGroup: TilesGroup = [tile, tile, tile]
-        const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
-        const nextVariants = getAllVariants(nextRemaining, [newGroup])
-        variants.push(...nextVariants)
-    }
-
-    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
-    if (hasPair) {
-        const newGroup: TilesGroup = [tile, tile]
-        const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
-        const nextVariants = getAllVariants(nextRemaining, [newGroup])
-        variants.push(...nextVariants)
-    }
-
-    const isNumberedSuit = tile.type !== SuitType.JIHAI
-    if (isNumberedSuit) {
-        const nextTile = {
-            type: tile.type,
-            value: tile.value + 1,
-        }
-        const nextNextTile = {
-            type: tile.type,
-            value: tile.value + 2,
-        }
-
-        const hasNextNumber = tile.value < 9 && hasTiles(remainingTiles, nextTile)
-        const hasNextNextNumber = tile.value < 8 && hasTiles(remainingTiles, nextNextTile)
-
-        if (hasNextNumber && hasNextNextNumber) {
-            // sequential meld (123)
-            const newGroup: TilesGroup = [tile, nextTile, nextNextTile]
-            const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
-            const nextVariants = getAllVariants(nextRemaining, [newGroup])
-            variants.push(...nextVariants)
-        }
-
-        if (hasNextNumber) {
-            // waits like 12_, 23_
-            const newGroup: TilesGroup = [tile, nextTile]
-            const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
-            const nextVariants = getAllVariants(nextRemaining, [newGroup])
-            variants.push(...nextVariants)
-        }
-
-        if (hasNextNextNumber) {
-            // waits like 1_3
-            const newGroup: TilesGroup = [tile, nextNextTile]
-            const nextRemaining = excludeTiles(remainingTiles, ...newGroup)
-            const nextVariants = getAllVariants(nextRemaining, [newGroup])
-            variants.push(...nextVariants)
-        }
-    }
-
-    if (variants.length === 0) {
-        // just 1 separated tile
-        const nextRemaining = remainingTiles.slice(1)
-        const newGroup: TilesGroup = [tile]
-        const nextVariants = getAllVariants(nextRemaining, [newGroup])
-        variants.push(...nextVariants)
-    }
-
-    return variants.map(variant => currentVariant.concat(variant))
-}
