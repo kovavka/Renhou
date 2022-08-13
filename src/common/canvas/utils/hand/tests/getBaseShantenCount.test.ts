@@ -5,7 +5,7 @@ describe('getBaseShantenCount', () => {
         it('should be 0 shanten when hand has 4 melds and 0 groups', () => {
             expect(getBaseShantenCount(13,  4, 0, false)).toBe(0)
         })
-        it('should be 0 shanten when hand has 3 melds and 2 groups including pair', () => {
+        it('should be 0 shanten when hand has 3 melds and 2 groups including at least 1 pair', () => {
             expect(getBaseShantenCount(13,  3, 2, true)).toBe(0)
         })
         it('should be 0 shanten when hand has 4 melds and 0 groups', () => {
