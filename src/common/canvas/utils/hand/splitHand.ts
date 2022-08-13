@@ -19,7 +19,7 @@ export type MeldVariant = {
 export type GroupingVariant = {
     sequences: TwoTilesGroup[]
     pairs: TwoTilesGroup[]
-    remainingTiles: Tile[]
+    uselessTiles: Tile[]
 }
 
 const TILE_TYPES = {
@@ -69,7 +69,7 @@ export function splitToGroups(allTiles: Tile[]): GroupingVariant[] {
     allVariants.map((groupingVariant) => {
         const pairs: TwoTilesGroup[] = []
         const sequences: TwoTilesGroup[] = []
-        const remainingTiles: Tile[] = []
+        const uselessTiles: Tile[] = []
 
         groupingVariant.forEach(group => {
             if (group.length === 2) {
@@ -79,20 +79,20 @@ export function splitToGroups(allTiles: Tile[]): GroupingVariant[] {
                     sequences.push(group)
                 }
             } else {
-                remainingTiles.push(group[0])
+                uselessTiles.push(group[0])
             }
         })
 
         // we might have duplicates even for simple structures and it's easier to check it here than in splitTiles
         const alreadyAdded = result.some(x =>
-            handInfoToString([...x.pairs, ...x.sequences], x.remainingTiles) === handInfoToString([...pairs, ...sequences], remainingTiles)
+            handInfoToString([...x.pairs, ...x.sequences], x.uselessTiles) === handInfoToString([...pairs, ...sequences], uselessTiles)
         )
 
         if (!alreadyAdded) {
             result.push({
                 pairs,
                 sequences,
-                remainingTiles,
+                uselessTiles,
             })
         }
     })

@@ -45,7 +45,7 @@ describe('splitHand', () => {
 
 describe('splitToGroups', () => {
     function variantsToString(variants: GroupingVariant[], printType: boolean = false): string[] {
-        return variants.map(x => handInfoToString([...x.pairs, ...x.sequences], x.remainingTiles, printType))
+        return variants.map(x => handInfoToString([...x.pairs, ...x.sequences], x.uselessTiles, printType))
     }
 
     it('Complicated structure', () => {

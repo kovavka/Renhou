@@ -30,7 +30,21 @@ describe('getBaseShantenCount', () => {
         })
     })
 
+    // todo add more
     describe('10 tiles', () => {
+        it('should be 3 shanten when hand has 5 groups without pair', () => {
+            expect(getBaseShantenCount(10,  0, 5, false)).toBe(3)
+        })
+        it('should be 2 shanten when hand has 5 groups with 1 pair', () => {
+            expect(getBaseShantenCount(10,  0, 5, true)).toBe(3)
+        })
+    })
+
+    describe('7 tiles', () => {
+
+    })
+
+    describe('4 tiles', () => {
 
     })
 })
