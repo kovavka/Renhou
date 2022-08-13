@@ -45,7 +45,7 @@ type MeldTileGroup = [Tile, Tile, Tile]
 type TwoTilesGroup = [Tile, Tile] // pair or 2/3 sequential meld tiles
 type SingleTileGroup = [Tile]
 
-type HandSpittingInfo = {
+export type HandSpittingInfo = {
     melds: MeldTileGroup[]
 
     groups: TwoTilesGroup[]
@@ -399,8 +399,8 @@ export function getAllTerimalAndHonorTiles(): Tile[] {
     ]
 }
 
-function processTiles(all: Tile[]): HandSpittingInfo[] {
-    const allVariants = getAllVariants(all, [])
+export function processTiles(all: Tile[]): HandSpittingInfo[] {
+    const allVariants = splitTiles(all)
     return allVariants.map((groupingVariant) => {
         const melds: MeldTileGroup[] = []
         const separatedTiles: Tile[] = []
@@ -470,118 +470,42 @@ export function getAllGroupsForTile(tile: Tile, remainingTiles: Tile[]): (MeldTi
     return groups
 }
 
-// export function splitTiles(allTiles: Tile[]): (MeldTileGroup | TwoTilesGroup)[] {
-//     const variants: HandSpittingInfo[] = []
-//
-//     for (let i = 0; i < allTiles.length; i++) {
-//         const allPossibleGroups = getAllGroupsForTile(tile)
-//         const groupVariants = []
-//         allPossibleGroups.forEach(group => {
-//             const remainingTiles = [...allTiles.slice(0, i), ...excludeTiles(allTiles, ...group)]
-//             splitTiles(remainingTiles)
-//         })
-//     }
-//
-//     return variants
-// }
-
-export function test2(allTiles: Tile[]): HandSpittingInfo[] {
+export function splitTiles(allTiles: Tile[]): GroupingVariant[] {
     if (allTiles.length === 0) {
         return []
     }
 
-    const variants: HandSpittingInfo[] = []
-    // const separatedTiles: Tile[] = []
+    const variants: GroupingVariant[] = []
 
     for (let i = 0; i < allTiles.length && allTiles.length > 1; i++) {
         const tile = allTiles[i]
         const allPossibleGroups = getAllGroupsForTile(tile, allTiles)
 
-        const groupVariants: HandSpittingInfo[] = []
+        const groupVariants: GroupingVariant[] = []
+
         allPossibleGroups.forEach(group => {
             const remainingTiles: Tile[] = excludeTiles(allTiles, ...group)
-            const nextVariants = test2(remainingTiles)
+            const nextVariants = splitTiles(remainingTiles)
 
-            const melds: MeldTileGroup[] = group.length === 3  ? [group] : []
-            const meldsToComplete: TwoTilesGroup[] = group.length === 2 ? [group] : []
-
-
-            nextVariants.forEach(info => {
-                const melds: MeldTileGroup[] = []
-                const meldsToComplete: TwoTilesGroup[] = []
-                if (group.length === 3) {
-                    melds.push(group)
-                } else {
-                    meldsToComplete.push(group)
-                }
-
-                groupVariants.push({
-                    melds: [...melds, ...info.melds],
-                    groups: [...meldsToComplete, ...info.groups],
-                    separatedTiles: info.separatedTiles
-                })
-            })
 
             if (nextVariants.length === 0) {
-                groupVariants.push({
-                    melds,
-                    groups: meldsToComplete,
-                    separatedTiles: []
+                groupVariants.push([group])
+            } else {
+                nextVariants.forEach(variant => {
+                    groupVariants.push([group, ...variant])
                 })
             }
         })
-        if (allPossibleGroups.length === 0) {
-            // if (variants.length === 0) {
-            //     separatedTiles.push(tile)
-            // }
-        } else {
-            variants.push(...groupVariants)
-        }
+
+        variants.push(...groupVariants)
     }
 
     if (variants.length === 0) {
-        return [{
-            melds: [],
-            groups: [],
-            separatedTiles: allTiles,
-        }]
+        return [allTiles.map(x => [x])]
     }
-
-    // if (separatedTiles.length > 0) {
-    //     variants.forEach(variant => {
-    //         variant.separatedTiles.push(...separatedTiles)
-    //     })
-    // }
 
     return variants
 }
-
-// export function test(remainingTiles: Tile[], currentGroup: MeldTileGroup | TwoTilesGroup): HandSpittingInfo[] {
-//     if (remainingTiles.length === 0) {
-//         return [currentGroup]
-//     }
-//
-//     const variants: HandSpittingInfo[] = []
-//
-//     const tile = remainingTiles[0]
-//     const allPossibleGroups = getAllGroupsForTile(tile)
-//     allPossibleGroups.forEach(group => {
-//         const nextRemaining = excludeTiles(remainingTiles, ...group)
-//         const nextVariants = splitTiles(nextRemaining, group)
-//         variants.push(...nextVariants)
-//     })
-//     if (allPossibleGroups.length === 0) {
-//         variants.push({
-//             melds: [],
-//             groups: [],
-//             separatedTiles: [tile],
-//         })
-//     }
-//
-//
-//
-//     return variants
-// }
 
 type TilesGroup = MeldTileGroup | TwoTilesGroup | SingleTileGroup
 type GroupingVariant = TilesGroup[]
