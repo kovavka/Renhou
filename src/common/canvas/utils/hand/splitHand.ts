@@ -29,7 +29,7 @@ const TILE_TYPES = {
 }
 
 export function splitHand(all: Tile[]): HandSpittingInfo[] {
-    const allVariants = getAllVariants(all, [])
+    const allVariants = splitTiles(all)
 
     const result: HandSpittingInfo[] = []
     allVariants.forEach((groupingVariant) => {
@@ -129,10 +129,6 @@ function getAllGroupsForTile(tile: Tile, remainingTiles: Tile[]): (MeldTileGroup
     if (hasPon) {
         groups.push([tile, tile, tile])
     }
-    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
-    if (hasPair) {
-        groups.push([tile, tile])
-    }
 
     const isNumberedSuit = tile.type !== SuitType.JIHAI
     if (isNumberedSuit) {
@@ -152,17 +148,22 @@ function getAllGroupsForTile(tile: Tile, remainingTiles: Tile[]): (MeldTileGroup
 
         if (hasSequentialMeld) {
             groups.push([tile, nextTile, nextNextTile])
-        }
+        } else if (!hasPon) {
+            if (hasNextNumber) {
+                // waits like 12_, 23_
+                groups.push([tile, nextTile])
+            }
 
-        if (hasNextNumber) {
-            // waits like 12_, 23_
-            groups.push([tile, nextTile])
+            if (hasNextNextNumber) {
+                // waits like 1_3
+                groups.push([tile, nextNextTile])
+            }
         }
+    }
 
-        if (hasNextNextNumber) {
-            // waits like 1_3
-            groups.push([tile, nextNextTile])
-        }
+    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
+    if (hasPair && !hasPon) {
+        groups.push([tile, tile])
     }
 
     return groups
@@ -193,3 +194,41 @@ function getAllVariants(remainingTiles: Tile[], currentVariant: SplittingVariant
 
     return variants.map(variant => currentVariant.concat(variant))
 }
+
+export function splitTiles(allTiles: Tile[]): SplittingVariant[] {
+    if (allTiles.length === 0) {
+        return []
+    }
+
+    const variants: SplittingVariant[] = []
+
+    for (let i = 0; i < allTiles.length && allTiles.length > 1; i++) {
+        const tile = allTiles[i]
+        const allPossibleGroups = getAllGroupsForTile(tile, allTiles)
+
+        const groupVariants: SplittingVariant[] = []
+
+        allPossibleGroups.forEach(group => {
+            const remainingTiles: Tile[] = excludeTiles(allTiles, ...group)
+            const nextVariants = splitTiles(remainingTiles)
+
+
+            if (nextVariants.length === 0) {
+                groupVariants.push([group])
+            } else {
+                nextVariants.forEach(variant => {
+                    groupVariants.push([group, ...variant])
+                })
+            }
+        })
+
+        variants.push(...groupVariants)
+    }
+
+    if (variants.length === 0) {
+        return [allTiles.map(x => [x])]
+    }
+
+    return variants
+}
+
