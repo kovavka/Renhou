@@ -1,176 +1,144 @@
 import {hasTempai} from "../hasTempai";
-import {Tile} from "../../../core/game-types/Tile";
 import {SuitType} from "../../../core/game-types/SuitType";
-import {
-    chun, haku, hatsu,
-    man1,
-    man2,
-    man3,
-    man4,
-    man5, man6,
-    man7,
-    man8,
-    man9, nan, pei,
-    pin1,
-    pin2,
-    pin3, pin9,
-    shaa,
-    sou1,
-    sou2,
-    sou3, sou9, ton
-} from "./testVariables";
+import {getTilesFromString} from "./testUtils";
 
 describe('hasTempai', () => {
     describe('Chiitoi', () => {
         it('Tempai when there are 6 pairs and a unique tile', () => {
-            const tiles = [man1, man1, man9, man9, pin1, pin1, pin9, pin9, sou1, sou1, sou9, sou9, haku]
+            const tiles = getTilesFromString('1199m1199p1199s5z')
             expect(hasTempai(tiles)).toBe(true)
         })
-        it('Not a templai when there are 6 pairs and 1 not a unique tile', () => {
-            const tiles = [man1, man1, man9, man9, pin1, pin1, pin9, pin9, sou1, sou1, sou9, sou9, sou9]
+        it('Not a templai when there are 6 pairs and 3 duplicate tiles', () => {
+            const tiles = getTilesFromString('1199m1199p111s56z')
             expect(hasTempai(tiles)).toBe(false)
         })
         it('Not a templai when there are 4 pairs, 4 duplicate tiles and a unique tile', () => {
-            const tiles = [man1, man1, man9, man9, pin1, pin1, pin9, pin9, sou1, sou1, sou1, sou1, sou9]
+            const tiles = getTilesFromString('1199m1199p11119s')
             expect(hasTempai(tiles)).toBe(false)
         })
         it('Not a templai when there are 5 pairs and 3 unique tiles', () => {
-            const tiles = [man1, man1, man9, man9, pin1, pin1, pin9, pin9, sou1, sou1, haku, hatsu, chun]
+            const tiles = getTilesFromString('1199m1199p11999s')
             expect(hasTempai(tiles)).toBe(false)
         })
     })
 
     describe('Kokushi muso', () => {
         it('Tempai when there are 12 single terminal and honor tiles + pair for one of them', () => {
-            const tiles = [man1, man9, pin1, pin9, sou1, sou9, haku, hatsu, chun, ton, nan, shaa, shaa]
+            const tiles = getTilesFromString('19m19p19s1234566z')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 13 single terminal and honor tiles', () => {
-            const tiles = [man1, man9, pin1, pin9, sou1, sou9, haku, hatsu, chun, ton, nan, shaa, pei]
+            const tiles = getTilesFromString('19m19p19s1234567z')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Not a templai when there is at least 1 man/pin/sou tile from 2 to 8', () => {
-            const tiles = [man1, man9, pin1, pin9, sou1, sou9, haku, hatsu, chun, ton, nan, shaa, man2]
+            const tiles = getTilesFromString('129m19p19s123456z')
             expect(hasTempai(tiles)).toBe(false)
         })
     })
 
     describe('Simple hand structure', () => {
         it('Tempai when there are 4 sequential melds and 1 tile', () => {
-            const tiles = [man1, man2, man3, man7, man8, man9, pin1, pin2, pin3, sou1, sou2, sou3, hatsu]
+            const tiles = getTilesFromString('123789m123p123s1z')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 4 identical melds and 1 tile', () => {
-            const tiles = [man1, man1, man1, man7, man7, man7, pin1, pin1, pin1, sou2, sou2, sou2, sou9]
+            const tiles = getTilesFromString('111777m111p2229s')
             expect(hasTempai(tiles)).toBe(true)
         })
-        it('Tempai when there are 4 melds and 1 tile', () => {
-            const tiles = [man1, man1, man1, man7, man8, man9, pin1, pin1, pin1, sou2, sou2, sou2, sou9]
+        it('Tempai when there are 4 melds of any kind and 1 tile', () => {
+            const tiles = getTilesFromString('111789m111p2229s')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 3 melds, 1 pair and 1 ryanmen', () => {
-            const tiles = [man1, man1, man1, pin1, pin1, pin1, sou2, sou2, sou2, sou9, sou9, man2, man3]
+            const tiles = getTilesFromString('11123m111p22299s')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 3 melds, 1 pair and 1 penchan', () => {
-            const tiles = [pin1, pin1, pin1, pin2, pin2, pin2, sou2, sou2, sou2, sou9, sou9, man1, man2]
+            const tiles = getTilesFromString('11112m111p22299s')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 3 melds, 1 pair and 1 kanchan', () => {
-            const tiles = [pin1, pin1, pin1, pin2, pin2, pin2, sou2, sou2, sou2, sou9, sou9, man1, man3]
+            const tiles = getTilesFromString('11113m222p22299s')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 3 melds and 2 pairs', () => {
-            const tiles = [pin1, pin1, pin1, pin2, pin2, pin2, sou2, sou2, sou2, sou9, sou9, man1, man1]
+            const tiles = getTilesFromString('11m111222p22299s')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Not a templai when there are 3 melds and 2 ryanmens', () => {
-            const tiles = [pin1, pin1, pin1, pin2, pin2, pin2, sou2, sou2, sou2, man2, man3, man7, man8]
+            const tiles = getTilesFromString('2378m111222p222s')
             expect(hasTempai(tiles)).toBe(false)
         })
         it('Not a templai when there are 3 melds, 1 pair and 2 separated tiles', () => {
-            const tiles = [pin1, pin1, pin1, pin2, pin2, pin2, sou2, sou2, sou2, man2, man2, haku, hatsu]
+            const tiles = getTilesFromString('22m111222p222s12z')
             expect(hasTempai(tiles)).toBe(false)
         })
     })
 
     describe('Complicated hand structure in a one suit', () => {
         it('Tempai when there are 4 melds and 1 tile', () => {
-            const meld1 = [man1, man2, man3]
-            const meld2 = [man2, man3, man4]
-            const meld3 = [man5, man6, man7]
-            const meld4 = [man5, man5, man5]
-            const tiles = [...meld1, ...meld2, ...meld3, ...meld4, man9]
+            const tiles = getTilesFromString('1223345675559m') // 123 234 567 555
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 3 melds, pair and any wait', () => {
-            const meld1 = [man1, man2, man3]
-            const meld2 = [man2, man3, man4]
-            const meld3 = [man5, man6, man7]
-            const pair = [man5, man5]
-            const wait = [man7, man8]
+            const tiles = getTilesFromString('1223345556778m') // 123 234 567 55 78
             // could be also interpreted as not a tepmai: 123 234 555 67 78
-            const tiles = [...meld1, ...meld2, ...meld3, ...pair, ...wait]
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Not a templai when there are 3 melds, 1 pair and 2 separated tiles', () => {
-            const meld1 = [man1, man1, man1]
-            const meld2 = [man1, man2, man3]
-            const meld3 = [man2, man3, man4]
-            const pair = [man7, man7]
-            const separatedTiles = [man4, man9]
-            const tiles = [...meld1, ...meld2, ...meld3, ...pair, ...separatedTiles]
+            const tiles = getTilesFromString('1111232344779m') // 111 123 234 77 49
             expect(hasTempai(tiles)).toBe(false)
         })
     })
 
     describe('1 tile', () => {
         it('Always tempai', () => {
-            expect(hasTempai([man1])).toBe(true)
+            expect(hasTempai([{type: SuitType.MANZU, value: 1}])).toBe(true)
         })
     })
 
     describe('4 tiles', () => {
         it('Tempai when there are 1 meld and 1 tile', () => {
-            const tiles = [man1, man2, man3, hatsu]
+            const tiles = getTilesFromString('123m1z')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 2 pairs', () => {
-            const tiles = [man1, man1, man3, man3]
+            const tiles = getTilesFromString('1133m')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Not a templai when there are 1 pair and 2 separated tiles', () => {
-            const tiles = [man1, man1, man3, hatsu]
+            const tiles = getTilesFromString('113m1z')
             expect(hasTempai(tiles)).toBe(false)
         })
     })
 
     describe('7 tiles', () => {
         it('Tempai when there are 2 melds and 1 tile', () => {
-            const tiles = [man1, man2, man3, sou1, sou1, sou1, hatsu]
+            const tiles = getTilesFromString('123m111s1z')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 1 meld and 2 pairs', () => {
-            const tiles = [sou1, sou1, sou1, man1, man1, man3, man3]
+            const tiles = getTilesFromString('1133m111s')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Not a templai when there are 1 meld, 1 pair and 2 separated tiles', () => {
-            const tiles = [sou1, sou1, sou1, man1, man1, man3, hatsu]
+            const tiles = getTilesFromString('113m111s1z')
             expect(hasTempai(tiles)).toBe(false)
         })
     })
 
-    describe('9 tiles', () => {
+    describe('10 tiles', () => {
         it('Tempai when there are 3 melds and 1 tile', () => {
-            const tiles = [man1, man2, man3, sou1, sou1, sou1, pin2, pin2, pin2, hatsu]
+            const tiles = getTilesFromString('123m222p111s1z')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Tempai when there are 2 melds and 2 pairs', () => {
-            const tiles = [sou1, sou1, sou1, pin1, pin2, pin3, man1, man1, man3, man3]
+            const tiles = getTilesFromString('1133m123p111s')
             expect(hasTempai(tiles)).toBe(true)
         })
         it('Not a templai when there are 2 melds, 1 pair and 2 separated tiles', () => {
-            const tiles = [sou1, sou1, sou1, pin1, pin2, pin3, man1, man1, man3, hatsu]
+            const tiles = getTilesFromString('113m123p111s1z')
             expect(hasTempai(tiles)).toBe(false)
         })
     })
@@ -180,38 +148,23 @@ describe('hasTempai', () => {
             expect(hasTempai([])).toBe(false)
         })
         it('Not a templai when tiles length > 13', () => {
-            const tiles: Tile[] = []
-            for (let i = 0; i < 15; i++) {
-                tiles.push({type: SuitType.MANZU, value: 1})
-            }
+            const tiles = getTilesFromString('11122233344455m')
             expect(hasTempai(tiles)).toBe(false)
         })
         it('Not a templai when tiles length > 1 && < 4', () => {
-            const tiles: Tile[] = []
-            for (let i = 1; i < 4; i++) {
-                tiles.push({type: SuitType.MANZU, value: 1})
-            }
+            const tiles = getTilesFromString('11m')
             expect(hasTempai(tiles)).toBe(false)
         })
-        it('Not a templai when tiles length > 1 && < 7', () => {
-            const tiles: Tile[] = []
-            for (let i = 1; i < 7; i++) {
-                tiles.push({type: SuitType.MANZU, value: 1})
-            }
+        it('Not a templai when tiles length > 4 && < 7', () => {
+            const tiles = getTilesFromString('11122m')
             expect(hasTempai(tiles)).toBe(false)
         })
-        it('Not a templai when tiles length > 4 && < 10', () => {
-            const tiles: Tile[] = []
-            for (let i = 1; i < 10; i++) {
-                tiles.push({type: SuitType.MANZU, value: 1})
-            }
+        it('Not a templai when tiles length > 7 && < 10', () => {
+            const tiles = getTilesFromString('11122233m')
             expect(hasTempai(tiles)).toBe(false)
         })
         it('Not a templai when tiles length > 10 && < 13', () => {
-            const tiles: Tile[] = []
-            for (let i = 1; i < 13; i++) {
-                tiles.push({type: SuitType.MANZU, value: 1})
-            }
+            const tiles = getTilesFromString('11122233344m')
             expect(hasTempai(tiles)).toBe(false)
         })
     })

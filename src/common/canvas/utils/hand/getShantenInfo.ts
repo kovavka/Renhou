@@ -56,8 +56,6 @@ export type ShantenInfo = {
     value: number
 }
 
-// todo when it's 0 shanten and tanki wait we have tile to replace
-
 // todo test waits like 3334 - should be 245
 
 export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
