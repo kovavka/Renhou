@@ -21,7 +21,7 @@ const OTHER_HANDS_SCALE_PERCENT = 0.8
 
 export class TableContainer {
     private static renderTop(context: Context, gameState: GameState, gameObjects: CanvasObject[], endX: number, y: number, scale: number): void {
-        const edgeType = EdgeType.SIDE
+        const edgeType = EdgeType.FRONT
         const [width] = getTileSize(Side.TOP, edgeType, scale)
         let posX = endX
 
@@ -45,7 +45,7 @@ export class TableContainer {
     }
 
     private static renderLeft(context: Context, gameState: GameState, gameObjects: CanvasObject[], x: number, y: number, scale: number): void {
-        const edgeType = EdgeType.SIDE
+        const edgeType = EdgeType.FRONT
         let posY = y
         gameState.hands[Side.LEFT].tiles.forEach(tile => {
             const tileView = new TileView(context, tile, x, posY, scale, Side.LEFT, edgeType)
@@ -65,7 +65,7 @@ export class TableContainer {
     }
 
     private static renderRight(context: Context, gameState: GameState, gameObjects: CanvasObject[], screenWidth: number, rightSideOffset: number, endY: number, scale: number): void {
-        const edgeType = EdgeType.SIDE
+        const edgeType = EdgeType.FRONT
         const [width, height] = getTileSize(Side.RIGHT, edgeType, scale)
         const posX = screenWidth - rightSideOffset - width
 

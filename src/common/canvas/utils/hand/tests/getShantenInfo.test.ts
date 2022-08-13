@@ -10,10 +10,10 @@ import {
     man9,
     nan,
     pei,
-    pin1,
+    pin1, pin3, pin4, pin6, pin7,
     pin9,
     shaa,
-    sou1, sou2, sou3, sou4,
+    sou1, sou2, sou3, sou4, sou5, sou6, sou7,
     sou9,
     ton
 } from "./testVariables";
@@ -210,6 +210,19 @@ describe('getShantenInfo', () => {
             expect(shantenInfo[0].possibleReplacements).toEqual([sou9]) // todo maybe add one of groups to possible replacement somehow?
             expect(shantenInfo[0].tilesToImprove).toEqual([man3, man4, man7, sou3, sou9])
         })
+
+        it('4 shanten', () => {
+            const tiles = [man9, pin3, pin6, pin7, pin9, pin9, sou3, sou5, sou6, sou7, haku, hatsu, ton]
+            const shantenInfo = getShantenInfo(tiles)
+
+            expect(shantenInfo[0].shantenCount).toBe(4)
+            expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
+            expect(shantenInfo[0].tilesToDiscard).toEqual([])
+            expect(shantenInfo[0].possibleReplacements).toEqual([man9])
+            expect(shantenInfo[0].tilesToImprove).toEqual([man9])
+        })
     })
+
+    // 9m36799p3567s124z (белый зел восток) + 4p
 
 })

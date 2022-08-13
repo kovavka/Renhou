@@ -11,6 +11,9 @@ import signals from "signals";
 import {Tile} from "../../core/game-types/Tile";
 import {DiscardTile} from "../../core/game-types/Discard";
 import {generateNewGame} from "./utils/generateNewGame";
+import {IBotPlayer} from "./bot-players/IBotPlayer";
+import {EasyBotPlayer} from "./bot-players/EasyBotPlayer";
+import {excludeTiles} from "../../utils/tiles/tileContains";
 
 const BOT_THINKING_TIMEOUT = 1000
 
@@ -19,8 +22,20 @@ export class MahjongServiceImpl implements IMahjongService {
 
     stateChanged: signals.Signal<GameState> = new signals.Signal()
 
+
+    private botPlayers: {[side in Side]: IBotPlayer | undefined} = {
+        [Side.TOP]: new EasyBotPlayer(),
+        [Side.LEFT]: new EasyBotPlayer(),
+        [Side.RIGHT]: new EasyBotPlayer(),
+    }
+
     start(): void {
         const newState = generateNewGame()
+
+        this.botPlayers[Side.TOP].setHand(newState.hands[Side.TOP].tiles)
+        this.botPlayers[Side.LEFT].setHand(newState.hands[Side.LEFT].tiles)
+        this.botPlayers[Side.RIGHT].setHand(newState.hands[Side.RIGHT].tiles)
+
         this.updateState(newState)
 
 
@@ -110,10 +125,13 @@ export class MahjongServiceImpl implements IMahjongService {
 
     private tryRunBotTurn(gameState: GameState) {
         const {currentTurn} = gameState
-        const {side} = currentTurn
-        if (side !== Side.BOTTOM) {
-            // todo choose tile to discard
-            const newState = this.discardDrawTile(gameState)
+        const {side, drawTile} = currentTurn
+        const botPlayer = this.botPlayers[side]
+        if (botPlayer !== undefined) {
+            const tileToDiscard = botPlayer.chooseTile(drawTile)
+            const newState = tileToDiscard === undefined
+            ? this.discardDrawTile(gameState)
+            : this.discardTileFromHand(gameState, tileToDiscard)
 
             setTimeout(() => {
                 this.finishTurn(newState)
@@ -133,11 +151,16 @@ export class MahjongServiceImpl implements IMahjongService {
 
         const currentHand = hands[side]
 
-        const newHandTiles = currentHand.tiles.filter(x => x !== tile)
+        const newHandTiles = excludeTiles(currentHand.tiles, tile)
         newHandTiles.push({
             type: drawTile.type,
             value: drawTile.value,
         })
+
+        const botPlayer = this.botPlayers[side]
+        if (botPlayer !== undefined) {
+            botPlayer.setHand(newHandTiles)
+        }
 
         return {
             ...gameState,

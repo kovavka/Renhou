@@ -48,7 +48,7 @@ type SingleTileGroup = [Tile]
 type HandSpittingInfo = {
     melds: MeldTileGroup[]
 
-    groups: (TwoTilesGroup)[]
+    groups: TwoTilesGroup[]
 
     /**
      * tiles we can not use to complete melds
@@ -177,7 +177,9 @@ function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): Hand
         if (!hasPair) {
             tilesToImprove.push(tile)
             possibleReplacements.push(tile)
-        } else if (needToGetMoreGroups) {
+        }
+
+        if (needToGetMoreGroups) {
             tilesToImprove.push(tile)
             if (tile.type !== SuitType.JIHAI) {
                 if (tile.value > 1) {
@@ -195,7 +197,7 @@ function getRegularHandStructure(info: HandSpittingInfo, allTiles: Tile[]): Hand
             }
 
             possibleReplacements.push(tile)
-        } else {
+        } else if (hasPair) {
             tilesToDiscard.push(tile)
         }
     })
@@ -422,12 +424,159 @@ function processTiles(all: Tile[]): HandSpittingInfo[] {
     })
 }
 
+export function getAllGroupsForTile(tile: Tile, remainingTiles: Tile[]): (MeldTileGroup | TwoTilesGroup)[] {
+    const groups: (MeldTileGroup | TwoTilesGroup)[] = []
+
+    const hasPon = hasIdenticalTiles(remainingTiles, tile, 3)
+    if (hasPon) {
+        groups.push([tile, tile, tile])
+    }
+
+    const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
+    if (hasPair) {
+        groups.push([tile, tile])
+    }
+
+    const isNumberedSuit = tile.type !== SuitType.JIHAI
+    if (isNumberedSuit) {
+        const nextTile = {
+            type: tile.type,
+            value: tile.value + 1,
+        }
+        const nextNextTile = {
+            type: tile.type,
+            value: tile.value + 2,
+        }
+
+        const hasNextNumber = tile.value < 9 && hasTiles(remainingTiles, nextTile)
+        const hasNextNextNumber = tile.value < 8 && hasTiles(remainingTiles, nextNextTile)
+
+        if (hasNextNumber && hasNextNextNumber) {
+            // sequential meld (123)
+            groups.push([tile, nextTile, nextNextTile])
+        }
+
+        if (hasNextNumber) {
+            // waits like 12_, 23_
+            groups.push([tile, nextTile])
+        }
+
+        if (hasNextNextNumber) {
+            // waits like 1_3
+            groups.push([tile, nextNextTile])
+        }
+    }
+
+    return groups
+}
+
+// export function splitTiles(allTiles: Tile[]): (MeldTileGroup | TwoTilesGroup)[] {
+//     const variants: HandSpittingInfo[] = []
+//
+//     for (let i = 0; i < allTiles.length; i++) {
+//         const allPossibleGroups = getAllGroupsForTile(tile)
+//         const groupVariants = []
+//         allPossibleGroups.forEach(group => {
+//             const remainingTiles = [...allTiles.slice(0, i), ...excludeTiles(allTiles, ...group)]
+//             splitTiles(remainingTiles)
+//         })
+//     }
+//
+//     return variants
+// }
+
+export function test2(allTiles: Tile[]): HandSpittingInfo[] {
+   const variants: HandSpittingInfo[] = []
+
+    for (let i = 0; i < allTiles.length; i++) {
+        const tile = allTiles[i]
+        const previousTiles = i > 0 ? allTiles.slice(0, i - 1) : []
+        const allPossibleGroups = getAllGroupsForTile(tile, allTiles)
+
+        const groupVariants = []
+        allPossibleGroups.forEach(group => {
+            const remainingTiles: Tile[] = [...previousTiles, ...excludeTiles(allTiles, ...group)]
+            const nextVariants = test2(remainingTiles)
+
+            const melds: MeldTileGroup[] = group.length === 3  ? [group] : []
+            const meldsToComplete: TwoTilesGroup[] = group.length === 2 ? [group] : []
+
+            nextVariants.forEach(info => {
+                const melds: MeldTileGroup[] = []
+                const meldsToComplete: TwoTilesGroup[] = []
+                if (group.length === 3) {
+                    melds.push(group)
+                } else {
+                    meldsToComplete.push(group)
+                }
+
+                variants.push({
+                    melds: [...melds, ...info.melds],
+                    groups: [...meldsToComplete, ...info.groups],
+                    separatedTiles: info.separatedTiles
+                })
+            })
+
+            if (nextVariants.length === 0) {
+                variants.push({
+                    melds,
+                    groups: meldsToComplete,
+                    separatedTiles: []
+                })
+            }
+        })
+        if (allPossibleGroups.length === 0) {
+            variants.forEach(variant => {
+                variant.separatedTiles.push(tile)
+            })
+            if (variants.length === 0) {
+                variants.push({
+                    melds: [],
+                    groups: [],
+                    separatedTiles: [tile],
+                })
+            }
+        }
+    }
+
+    return variants
+}
+
+// export function test(remainingTiles: Tile[], currentGroup: MeldTileGroup | TwoTilesGroup): HandSpittingInfo[] {
+//     if (remainingTiles.length === 0) {
+//         return [currentGroup]
+//     }
+//
+//     const variants: HandSpittingInfo[] = []
+//
+//     const tile = remainingTiles[0]
+//     const allPossibleGroups = getAllGroupsForTile(tile)
+//     allPossibleGroups.forEach(group => {
+//         const nextRemaining = excludeTiles(remainingTiles, ...group)
+//         const nextVariants = splitTiles(nextRemaining, group)
+//         variants.push(...nextVariants)
+//     })
+//     if (allPossibleGroups.length === 0) {
+//         variants.push({
+//             melds: [],
+//             groups: [],
+//             separatedTiles: [tile],
+//         })
+//     }
+//
+//
+//
+//     return variants
+// }
+
 type TilesGroup = MeldTileGroup | TwoTilesGroup | SingleTileGroup
 type GroupingVariant = TilesGroup[]
 
 /**
  * Get all possible variation of hand developing in current suit.
- * Separated tiles will be added to result only if they are not a part of any group
+ * Separated tiles will be added to result when:
+ *  - they are not a part of any group
+ *  - there could be part of any group, but next tile could it that group ??
  */
 function getAllVariants(remainingTiles: Tile[], currentVariant: GroupingVariant): GroupingVariant[] {
     if (remainingTiles.length === 0) {
