@@ -21,14 +21,24 @@ type NextDrawInfo = {
     improvements: Tile[]
 
     /**
-     * useful tiles player can get without shanten changing
+     * todo remove?
+     * useful tiles player can get without shanten changing,
+     * not including actual improvements.
+     * e.g. all connector for separated tile when don't need to improve it to group (23456 for 4)
      */
-    canDraw: Tile[]
+    usefulTiles: Tile[]
 
     /**
-     * tiles player can replace without shanten changing
+     * connectors for all tiles in hand (23456 for 4).
+     * not working for
      */
-    canReplace: Tile[]
+    allConnectors: Tile[]
+
+    /**
+     * tiles player can replace without shanten or ukeire changing.
+     * not aware of live/dead tiles
+     */
+    safeToReplace: Tile[]
 
     /**
      * tiles player should discard to complete chiitoi or kokushi muso
@@ -36,6 +46,7 @@ type NextDrawInfo = {
     toDiscard: Tile[]
 
     /**
+     * todo might not work properly for different splitting variants (e.g. in chinitsu)
      * tiles player can NOT discard without shanten increasing
      * todo won't work for chiitoi and kokushi muso -> fix or add a comment if it should stay this way
      */
@@ -132,6 +143,11 @@ function getClosestTiles(tile: Tile): Tile[] {
     return tilesToImprove
 }
 
+// todo add tests
+function getConnectors(tile: Tile): Tile[] {
+    return [...getClosestTiles(tile), tile]
+}
+
 function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): Tile[] {
     const tilesToImprove: Tile[] = []
     const minValue =  Math.min(tileA.value, tileB.value)
@@ -173,16 +189,18 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
     const {melds, remainingTiles} = info
 
     if (allTiles.length === 1) {
+        const singeTile = allTiles[0]
         return {
             splittingInfo: info,
             structureType: HandStructureType.REGULAR,
             nextDrawInfo: {
-                improvements: remainingTiles,
-                canDraw: [],
-                canReplace: remainingTiles,
+                improvements: [singeTile],
+                usefulTiles: [],
+                safeToReplace: [singeTile],
                 toDiscard: [],
                 // it's just one tile and we can replace it
                 toLeave: [],
+                allConnectors: getConnectors(singeTile),
             },
             value: 0,
         }
@@ -203,6 +221,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
     const possibleReplacements: Tile[] = []
     const usefulDrawTiles: Tile[] = [] // todo should we add more tiles here?
     const importantTilesToLeave: Tile[] = []
+    const allConnectors: Tile[] = []
 
     groupingVariants.forEach(variant => {
         const {pairs, sequences, uselessTiles} = variant
@@ -256,9 +275,9 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
                 tilesToImprove.push(tileA)
                 tilesToImprove.push(tileB)
             } else {
-                // todo check
-                usefulDrawTiles.push(tileA)
-                usefulDrawTiles.push(tileB)
+                // // todo check
+                // usefulDrawTiles.push(tileA)
+                // usefulDrawTiles.push(tileB)
             }
             if (!canDiscardSomeGroups) {
                 importantTilesToLeave.push(tileA)
@@ -268,16 +287,17 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
             tilesToImprove.push(...getTilesToCompleteSequence(tileA, tileB))
         })
 
+
         uselessTiles.forEach(tile => {
             if (!hasPair) {
                 // for tempai only this 1 tile will be an improvement;
                 // for shanten > 0 if we don't have a pair we can decrease shanten by creating one
                 tilesToImprove.push(tile)
             } else {
-                if (minShantenValue !== 0) {
-                    // because for tempai it will be improvement anyway (to win)
-                    usefulDrawTiles.push(tile)
-                }
+                // if (minShantenValue !== 0) {
+                //     // because for tempai it will be improvement anyway (to win)
+                //     usefulDrawTiles.push(tile)
+                // }
             }
 
             possibleReplacements.push(tile)
@@ -286,20 +306,33 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
                 tilesToImprove.push(tile)
                 tilesToImprove.push(...getClosestTiles(tile))
             }
+
+            // todo check if bot can decide to discard separated tile to make a sequence with another one
+            //  when it's just 2 separated tiles and we don't have a pair
+            //  e.g [12m 45m 2p 9s] + 3p -> [12m 45m 23p] and 9 to discard
+            // although it could be useful to improve pair to sequence and discard tile from other one instead
+
+            // else {
+            //     usefulDrawTiles.push(tile)
+            //     usefulDrawTiles.push(...getClosestTiles(tile))
+            // }
         })
     })
 
-
+    allTiles.forEach(tile => {
+        allConnectors.push(...getConnectors(tile))
+    })
 
     return {
         splittingInfo: info,
         structureType: HandStructureType.REGULAR,
         nextDrawInfo: {
             improvements: getUniqueTiles(tilesToImprove),
-            canDraw: usefulDrawTiles,
-            canReplace: possibleReplacements,
+            usefulTiles: usefulDrawTiles,
+            safeToReplace: possibleReplacements,
             toDiscard: [],
             toLeave: getUniqueTiles(importantTilesToLeave),
+            allConnectors,
         },
         value: minShantenValue,
     }
@@ -384,10 +417,11 @@ function getChiitoiInfo(allTiles: Tile[]): ShantenInfo | undefined {
         structureType: HandStructureType.CHIITOI,
         nextDrawInfo: {
             improvements: getUniqueTiles(tilesToImprove),
-            canDraw: [],
-            canReplace: possibleReplacements,
+            usefulTiles: [],
+            safeToReplace: possibleReplacements,
             toDiscard: tilesToDiscard,
             toLeave: pairs,
+            allConnectors: []
         },
         value: shantenCount,
     }
@@ -457,10 +491,11 @@ function getKokushiMusoInfo(allTiles: Tile[]): ShantenInfo | undefined {
         structureType: HandStructureType.KOKUSHI_MUSO,
         nextDrawInfo: {
             improvements: tilesToImprove,
-            canDraw: [],
-            canReplace: [],
+            usefulTiles: [],
+            safeToReplace: [],
             toDiscard: tilesToDiscard,
             toLeave: singleTiles,
+            allConnectors: []
         },
         value: shantenCount,
     }
