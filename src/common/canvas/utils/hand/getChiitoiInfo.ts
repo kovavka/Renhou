@@ -2,6 +2,8 @@ import { Tile } from '../../core/game-types/Tile'
 import { groupIdenticalTiles } from '../tiles/groupIdenticalTiles'
 
 export type ChiitoiInfo = {
+    shanten: number
+
     /**
      * groups of 2, 3 or 4 identical tiles
      */
@@ -17,8 +19,6 @@ export type ChiitoiInfo = {
      * (according to rules, chiitoi can contain only different pairs)
      */
     tilesToDiscard: Tile[]
-
-    shanten: number
 }
 
 const MAX_PAIRS_NUMBER = 6

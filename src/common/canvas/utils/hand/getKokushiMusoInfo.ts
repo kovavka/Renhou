@@ -4,6 +4,8 @@ import { isTerminalOrHonorTile } from '../tiles/isTerminalOrHonorTile'
 import { getTerimalAndHonors } from './getTerimalAndHonors'
 
 export type KokushiMusoInfo = {
+    shanten: number
+
     /**
      * all terminals and honors + pair for one if we don't have it yet
      */
@@ -14,8 +16,6 @@ export type KokushiMusoInfo = {
      * (according to rules, chiitoi can contain only different pairs)
      */
     tilesToDiscard: Tile[]
-
-    shanten: number
 }
 
 export function getKokushiMusoInfo(allTiles: Tile[]): KokushiMusoInfo | undefined {

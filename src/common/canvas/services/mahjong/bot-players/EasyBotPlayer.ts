@@ -1,10 +1,20 @@
 import { IBotPlayer } from './IBotPlayer'
 import { Tile } from '../../../core/game-types/Tile'
 import { DrawTile } from '../../../core/game-types/DrawTile'
-import { getShantenInfo, ShantenInfo } from '../../../utils/hand/getShantenInfo'
+import {
+    getShantenInfo,
+    getTilesToCompleteSequence,
+    ShantenInfo,
+} from '../../../utils/hand/getShantenInfo'
 import { Hand } from '../../../core/game-types/Hand'
-import { excludeTiles, hasTiles } from '../../../utils/tiles/tileContains'
+import { excludeTiles, hasTiles, isTheSameTile } from '../../../utils/tiles/tileContains'
 import { SuitType } from '../../../core/game-types/SuitType'
+import { getClosestTiles } from '../../../utils/hand/getClosestTiles'
+
+// todo check if bot can decide to discard separated tile to make a sequence with another one
+//  when it's just 2 separated tiles and we don't have a pair
+//  e.g [12m 45m 2p 9s] + 3p -> [12m 45m 23p] and 9 to discard
+// although it could be useful to improve pair to sequence and discard tile from other one instead
 
 export class EasyBotPlayer implements IBotPlayer {
     private shantenInfo: ShantenInfo[] = []
@@ -20,8 +30,7 @@ export class EasyBotPlayer implements IBotPlayer {
         //     return undefined
         // }
 
-        const onlyRegular = this.shantenInfo
-        const minRegularShanten = onlyRegular.length !== 0 ? onlyRegular[0].value : -1
+        const minShanten = this.shantenInfo[0].value
 
         if (this.shantenInfo[0].value === 0) {
             // todo call tsumo,
@@ -30,86 +39,77 @@ export class EasyBotPlayer implements IBotPlayer {
             return undefined
         }
 
-        // const toDiscard: Tile[] = []
+        // we should create some rating
+        let uselessTilesCouldDiscard: Tile[] = []
 
-        // we can check han and fu as well
+        // we can check han and fu as well (for more smart bots)
         for (const info of this.shantenInfo) {
-            if (info.value > minRegularShanten) {
+            const { splittingInfo, value, variants } = info
+            const { remainingTiles } = splittingInfo
+            if (value > minShanten) {
                 break
             }
 
-            const { improvements } = info.nextDrawInfo
-
-            // if (info.structureType === HandStructureType.CHIITOI) {
-            //     // for easy bot we won't check all hand development possibilities
-            //     // and chiitoi could be too ineffective,
-            //     // so it doesn't make much sense to get chiitoi when shanten > 2
-            //     if (info.value > 2) {
-            //         break
-            //     }
-            //
-            //
-            //     // add all possible tiles (except tile in the hand) as tiles to improve.
-            //     // it will increase shanten when we have at least one group with length > 2
-            //     // and less than 2 tiles without group
-            //     // if (identicalGroups.filter(x => x.count > 2).length > 0 && tilesWithoutGroup.length < 2)
-            //     //    then add all others (1-9 man-jihai)
-            //
-            //
-            //     // we can replace waits if draw tile has more live tiles to pair
-            //
-            //     if (hasTiles(improvements, drawTile)) {
-            //         if (toDiscard.length > 0) {
-            //             return toDiscard[0]
-            //         }
-            //     }
-            // }
-
-            // if (info.structureType === HandStructureType.KOKUSHI_MUSO) {
-            //     // for easy bit we won't check all hand development possibilities
-            //     // and kokushi muso is not effective for most cases,
-            //     // so it doesn't make much sense to get kokushi muso when shanten > 2
-            //     if (info.value > 3) {
-            //         break
-            //     }
-            //
-            //     if (hasTiles(improvements, drawTile)) {
-            //         if (toDiscard.length > 0) {
-            //             return toDiscard[0]
-            //         }
-            //     }
-            // }
-
-            if (hasTiles(improvements, drawTile)) {
-                const find = this.findSomethingToDiscard(
-                    info.splittingInfo.remainingTiles,
-                    drawTile
-                )
-                if (find !== undefined) {
-                    return find
+            for (const groupInfo of variants) {
+                // todo make canDiscardSequence instead of canDiscardGroup
+                const {
+                    shanten,
+                    splittingInfo: groupSplittingInfo,
+                    waits,
+                    canDiscardGroup,
+                    canDiscardPair,
+                } = groupInfo
+                const { pairs, sequences, uselessTiles } = groupSplittingInfo
+                if (info.value > minShanten) {
+                    break
                 }
-            }
 
-            // todo canDraw and canReplace
-        }
+                // todo save all discards and choose most useless tile
 
-        for (const info of this.shantenInfo) {
-            if (info.value > minRegularShanten) {
-                break
-            }
+                if (hasTiles(waits, drawTile)) {
+                    uselessTilesCouldDiscard = uselessTiles
 
-            const { improvements, usefulTiles } = info.nextDrawInfo
+                    if (canDiscardPair) {
+                        // todo it doesn't make sense to store 2 tiles in pairs
+                        const find = pairs.find(x => !isTheSameTile(x[0], drawTile))
+                        if (find !== undefined) {
+                            return find[0]
+                        }
+                    }
 
-            if (hasTiles(usefulTiles, drawTile)) {
-                const find = this.findSomethingToDiscard(
-                    info.splittingInfo.remainingTiles,
-                    drawTile
-                )
-                if (find !== undefined) {
-                    return find
+                    if (canDiscardGroup) {
+                        const find = sequences.find(x => {
+                            const [tileA, tileB] = x
+                            const waits = getTilesToCompleteSequence(tileA, tileB)
+                            if (!hasTiles(waits, drawTile)) {
+                                return tileA // todo or tileB
+                            }
+                        })
+                        if (find !== undefined) {
+                            return find[0]
+                        }
+                    }
+
+                    {
+                        const find = uselessTiles.find(x => {
+                            const useful = getClosestTiles(x)
+                            if (!hasTiles(waits, drawTile)) {
+                                return useful[0] // todo might choose another
+                            }
+                        })
+                        if (find !== undefined) {
+                            return find
+                        }
+                    }
                 }
             }
         }
+
+        if (uselessTilesCouldDiscard.length) {
+            return uselessTilesCouldDiscard[0]
+        }
+
+        // todo checl connectors
 
         // we should keep draw tile when we have many shanten and draw tile is more useful than separated tile:
         //  - it's a pair to something else
@@ -117,19 +117,5 @@ export class EasyBotPlayer implements IBotPlayer {
         //  - it could help increase hand cost
 
         return undefined
-    }
-
-    private findSomethingToDiscard(remainingTiles: Tile[], drawTile: Tile): Tile | undefined {
-        const tilesMightDiscard = excludeTiles(remainingTiles, drawTile).find(tile => {
-            if (tile.type !== drawTile.type || tile.type === SuitType.JIHAI) {
-                return true
-            }
-
-            // they cant form sequential group together
-            return Math.abs(tile.value - drawTile.value) > 2
-        })
-        if (tilesMightDiscard !== undefined) {
-            return tilesMightDiscard
-        }
     }
 }

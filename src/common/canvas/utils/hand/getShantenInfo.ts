@@ -1,48 +1,29 @@
 import { Tile } from '../../core/game-types/Tile'
-import { SuitType } from '../../core/game-types/SuitType'
 import { getUniqueTiles } from '../tiles/tileContains'
 import { getBaseShantenCount } from './getBaseShantenCount'
-import { MeldVariant, splitHand, splitToGroups } from './splitHand'
+import { GroupingVariant, MeldVariant, splitHand, splitToGroups } from './splitHand'
+import { getClosestTiles } from './getClosestTiles'
 
 // todo calculate most useless tile in hand by hand + draw tile
 
-type NextDrawInfo = {
-    /**
-     * tiles player can get to decrease shanten
-     */
-    improvements: Tile[]
-
-    /**
-     * todo remove?
-     * useful tiles player can get without shanten changing,
-     * not including actual improvements.
-     * e.g. all connector for separated tile when don't need to improve it to group (23456 for 4)
-     */
-    usefulTiles: Tile[]
-
-    /**
-     * connectors for all tiles in hand (23456 for 4).
-     * not working for
-     */
-    allConnectors: Tile[]
-
-    /**
-     * tiles player can replace without shanten or ukeire changing.
-     * not aware of live/dead tiles
-     */
-    safeToReplace: Tile[]
+export type GroupingInfo = {
+    shanten: number
+    splittingInfo: GroupingVariant
+    waits: Tile[]
+    canDiscardPair: boolean
+    canDiscardGroup: boolean
 }
 
 export type ShantenInfo = {
-    // todo maybe we don't need it?
-    splittingInfo: MeldVariant
-
-    nextDrawInfo: NextDrawInfo
-
     /**
      *  number of tiles needed for reaching tempai
      */
     value: number
+
+    // todo maybe we don't need it?
+    splittingInfo: MeldVariant
+
+    variants: GroupingInfo[]
 }
 
 /**
@@ -72,57 +53,8 @@ export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
     return result.sort((a, b) => a.value - b.value)
 }
 
-// todo add tests
-function getClosestTiles(tile: Tile): Tile[] {
-    if (tile.type === SuitType.JIHAI) {
-        return []
-    }
-
-    const tilesToImprove: Tile[] = []
-
-    if (tile.value >= 2) {
-        // ryanmen _32_
-        // penchan 21_
-        tilesToImprove.push({
-            type: tile.type,
-            value: tile.value - 1,
-        })
-    }
-
-    if (tile.value >= 3) {
-        // kanchan 3_1
-        tilesToImprove.push({
-            type: tile.type,
-            value: tile.value - 2,
-        })
-    }
-
-    if (tile.value <= 7) {
-        // kanchan 7_9
-        tilesToImprove.push({
-            type: tile.type,
-            value: tile.value + 2,
-        })
-    }
-
-    if (tile.value <= 8) {
-        // ryanmen _78_
-        // penchan _89
-        tilesToImprove.push({
-            type: tile.type,
-            value: tile.value + 1,
-        })
-    }
-
-    return tilesToImprove
-}
-
-// todo add tests
-function getConnectors(tile: Tile): Tile[] {
-    return [...getClosestTiles(tile), tile]
-}
-
-function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): Tile[] {
+// todo tests
+export function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): Tile[] {
     const tilesToImprove: Tile[] = []
     const minValue = Math.min(tileA.value, tileB.value)
     const maxValue = Math.max(tileA.value, tileB.value)
@@ -159,44 +91,39 @@ function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): Tile[] {
     return tilesToImprove
 }
 
+function getConnectors(tile: Tile): Tile[] {
+    return [...getClosestTiles(tile), tile]
+}
+
 function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenInfo {
     const { melds, remainingTiles } = info
 
     if (allTiles.length === 1) {
-        const singeTile = allTiles[0]
         return {
             splittingInfo: info,
-            nextDrawInfo: {
-                improvements: [singeTile],
-                usefulTiles: [],
-                safeToReplace: [singeTile],
-                allConnectors: getConnectors(singeTile),
-            },
+            variants: [
+                {
+                    shanten: 0,
+                    splittingInfo: {
+                        pairs: [],
+                        sequences: [],
+                        uselessTiles: allTiles,
+                    },
+                    waits: allTiles,
+                    canDiscardPair: false,
+                    canDiscardGroup: false,
+                },
+            ],
             value: 0,
         }
     }
 
-    let minShantenValue = 6
-
-    const groupingVariants = splitToGroups(info.remainingTiles)
-
-    groupingVariants.forEach(variant => {
-        const { pairs, sequences } = variant
-
-        const shantenValue = getBaseShantenCount(
-            allTiles.length,
-            melds.length,
-            sequences.length + pairs.length,
-            pairs.length > 0
-        )
-        minShantenValue = Math.min(shantenValue, minShantenValue)
-    })
+    const groupingVariants = splitToGroups(remainingTiles)
 
     const tilesToImprove: Tile[] = []
-    const possibleReplacements: Tile[] = []
-    const usefulDrawTiles: Tile[] = [] // todo should we add more tiles here?
-    const importantTilesToLeave: Tile[] = []
-    const allConnectors: Tile[] = []
+
+    let minShantenValue = 6
+    const groupInfos: GroupingInfo[] = []
 
     groupingVariants.forEach(variant => {
         const { pairs, sequences, uselessTiles } = variant
@@ -207,11 +134,9 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
             allTiles.length,
             melds.length,
             groupsCount,
-            pairs.length > 0
+            hasPair
         )
-        if (shantenValue > minShantenValue) {
-            return // todo maybe we should also check improvements for variants with shanten - 1?
-        }
+        minShantenValue = Math.min(shantenValue, minShantenValue)
 
         // we don't have enough groups when shanten >= groups length,
         // so it order to reach tempai we need to get 1+ groups
@@ -223,8 +148,8 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
         // BUT we shouldn't discard pair if it's the only one
         // e.g. [23 56 89 2], 3 < 2 -> can discard
         // [12 45 78 12 5 9], 4 >= 4 -> can not discard
-        const canDiscardSomeGroups = groupsCount > minShantenValue
-        const canDiscardPair = canDiscardSomeGroups && pairs.length > 1
+        const canDiscardGroup = groupsCount > minShantenValue
+        const canDiscardPair = canDiscardGroup && pairs.length > 1
 
         // it's impossible to improve hand with upgrading pair to pon,
         // when we all others groups are sequences
@@ -239,10 +164,6 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
             if (canUpgradePairToMeld) {
                 tilesToImprove.push(pair[0])
             }
-
-            if (!canDiscardPair) {
-                importantTilesToLeave.push(pair[0])
-            }
         })
 
         sequences.forEach(sequence => {
@@ -250,14 +171,6 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
             if (shouldMakePairFromSeqMeld) {
                 tilesToImprove.push(tileA)
                 tilesToImprove.push(tileB)
-            } else {
-                // // todo check
-                // usefulDrawTiles.push(tileA)
-                // usefulDrawTiles.push(tileB)
-            }
-            if (!canDiscardSomeGroups) {
-                importantTilesToLeave.push(tileA)
-                importantTilesToLeave.push(tileB)
             }
 
             tilesToImprove.push(...getTilesToCompleteSequence(tileA, tileB))
@@ -268,44 +181,26 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
                 // for tempai only this 1 tile will be an improvement;
                 // for shanten > 0 if we don't have a pair we can decrease shanten by creating one
                 tilesToImprove.push(tile)
-            } else {
-                // if (minShantenValue !== 0) {
-                //     // because for tempai it will be improvement anyway (to win)
-                //     usefulDrawTiles.push(tile)
-                // }
             }
-
-            possibleReplacements.push(tile)
 
             if (needToGetMoreGroups) {
                 tilesToImprove.push(tile)
                 tilesToImprove.push(...getClosestTiles(tile))
             }
-
-            // todo check if bot can decide to discard separated tile to make a sequence with another one
-            //  when it's just 2 separated tiles and we don't have a pair
-            //  e.g [12m 45m 2p 9s] + 3p -> [12m 45m 23p] and 9 to discard
-            // although it could be useful to improve pair to sequence and discard tile from other one instead
-
-            // else {
-            //     usefulDrawTiles.push(tile)
-            //     usefulDrawTiles.push(...getClosestTiles(tile))
-            // }
         })
-    })
 
-    allTiles.forEach(tile => {
-        allConnectors.push(...getConnectors(tile))
+        groupInfos.push({
+            shanten: shantenValue,
+            splittingInfo: variant,
+            waits: tilesToImprove,
+            canDiscardPair,
+            canDiscardGroup,
+        })
     })
 
     return {
         splittingInfo: info,
-        nextDrawInfo: {
-            improvements: getUniqueTiles(tilesToImprove),
-            usefulTiles: usefulDrawTiles,
-            safeToReplace: possibleReplacements,
-            allConnectors,
-        },
+        variants: groupInfos,
         value: minShantenValue,
     }
 }
