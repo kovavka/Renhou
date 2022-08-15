@@ -1,4 +1,4 @@
-import {getAllTerimalAndHonorTiles, getShantenInfo, HandStructureType} from "../getShantenInfo";
+import {getShantenInfo} from "../getShantenInfo";
 import {hasTiles} from "../../tiles/tileContains";
 import {sortTiles} from "../../game/sortTiles";
 import {getTilesFromString} from "./testUtils";
@@ -6,76 +6,6 @@ import {SuitType} from "../../../core/game-types/SuitType";
 import {Tile} from "../../../core/game-types/Tile";
 
 describe('getShantenInfo', () => {
-    describe('Chiitoi', () => {
-        describe('6 pairs and a unique tile', () => {
-            it('Should be 0 shanten and only 1 tile to improve', () => {
-                const tiles = getTilesFromString('1199m1199p1199s5z')
-                const shantenInfo = getShantenInfo(tiles)
-
-                expect(shantenInfo[0].value).toBe(0)
-                expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
-                expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.JIHAI, value: 5}])
-                expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.JIHAI, value: 5}])
-                expect(shantenInfo[0].nextDrawInfo.toLeave).toEqual([
-
-                ])
-                expect(shantenInfo[0].nextDrawInfo.usefulTiles).toEqual([])
-            })
-        })
-         describe('5 pairs and group of 3 tiles', () => {
-             it('Should be 1 shanten, 1 tile to discard and 28 tiles to improve', () => {
-                 const tiles = getTilesFromString('1199m1199p11999s')
-                 const shantenInfo = getShantenInfo(tiles)
-
-                 expect(shantenInfo[0].value).toBe(1)
-                 expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([{type: SuitType.SOUZU, value: 9}])
-                 expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
-
-                 const tilesToImprove = shantenInfo[0].nextDrawInfo.improvements
-                 expect(hasTiles(tilesToImprove, ...tiles)).toBe(false)
-                 expect(tilesToImprove.length).toBe(28)
-             })
-        })
-         describe('4 pairs, 1 group of 4 tiles and a unique tile', () => {
-             it('Should be 2 shanten, 1 tile to discard and 29 to improve', () => {
-                 const tiles = getTilesFromString('1199m1199p11119s')
-                 const shantenInfo = getShantenInfo(tiles)
-
-                 expect(shantenInfo[0].value).toBe(2)
-                 expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([{type: SuitType.SOUZU, value: 1}])
-                 expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.SOUZU, value: 9}])
-
-                 const tilesToImprove = shantenInfo[0].nextDrawInfo.improvements
-                 expect(hasTiles(tilesToImprove, ...tiles)).toBe(false)
-                 expect(tilesToImprove.length).toBe(29)
-             })
-        })
-        describe('4 pairs, 1 group of 3 tiles and 2 different unique tiles', () => {
-             it('Should be 1 shanten and 3 tiles to improve', () => {
-                 const tiles = getTilesFromString('1199m1199p111s56z')
-                 const shantenInfo = getShantenInfo(tiles)
-
-                 expect(shantenInfo[0].value).toBe(1)
-                 expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([{type: SuitType.SOUZU, value: 1}])
-                 expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.JIHAI, value: 5}, {type: SuitType.JIHAI, value: 6}])
-                 expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.JIHAI, value: 5}, {type: SuitType.JIHAI, value: 6}])
-             })
-        })
-        describe('5 pairs and 3 different unique tiles', () => {
-             it('Should be 1 shanten and 3 tiles to improve', () => {
-                 const tiles = getTilesFromString('1199m1199p11s567z')
-                 const shantenInfo = getShantenInfo(tiles)
-
-                 expect(shantenInfo[0].value).toBe(1)
-                 expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
-
-                 const separatedTiles = [{type: SuitType.JIHAI, value: 5}, {type: SuitType.JIHAI, value: 6}, {type: SuitType.JIHAI, value: 7}]
-                 expect(shantenInfo[0].nextDrawInfo.improvements).toEqual(separatedTiles)
-                 expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual(separatedTiles)
-             })
-        })
-    })
-
     describe('Toitoi', () => {
         describe('2 pairs, 2 group of 4 tiles and a unique tile', () => {
             it('Should be 2 shanten, 1 tile to discard and 30 to improve', () => {
@@ -86,7 +16,7 @@ describe('getShantenInfo', () => {
                 //  1. we could add 4th tile for a meld to canDraw (or new field) and make a call using this information
                 //  2. we should check if we are going to wait 5th tile of the suit
                 expect(shantenInfo[0].value).toBe(2)
-                expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([{type: SuitType.PINZU, value: 1}, {type: SuitType.SOUZU, value: 2}])
+                // expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([{type: SuitType.PINZU, value: 1}, {type: SuitType.SOUZU, value: 2}])
                 expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.SOUZU, value: 9}])
                 expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 1}, {type: SuitType.MANZU, value: 9}, {type: SuitType.SOUZU, value: 9}])
             })
@@ -98,9 +28,7 @@ describe('getShantenInfo', () => {
             const tiles = getTilesFromString('112233m112233s5z')
             const shantenInfo = getShantenInfo(tiles)
 
-            expect(shantenInfo[0].structureType).toBe(HandStructureType.REGULAR)
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.JIHAI, value: 5}])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.JIHAI, value: 5}])
         })
@@ -109,54 +37,17 @@ describe('getShantenInfo', () => {
             const shantenInfo = getShantenInfo(tiles)
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.SOUZU, value: 1}, {type: SuitType.SOUZU, value: 4}])
         })
     })
 
-    describe('Kokushi muso', () => {
-        describe('12 single terminal and honor tiles + pair for one of them', () => {
-            it('Should be 0 shanten and only 1 tile to improve', () => {
-                const tiles = getTilesFromString('19m19p19s1234566z')
-                const shantenInfo = getShantenInfo(tiles)
-
-                expect(shantenInfo[0].value).toBe(0)
-                expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
-                expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
-                expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.JIHAI, value: 7}])
-            })
-        })
-        describe('13 single terminal and honor tiles', () => {
-            it('Should be 0 shanten and 13 tiles to improve', () => {
-                const tiles = getTilesFromString('19m19p19s1234567z')
-                const shantenInfo = getShantenInfo(tiles)
-
-                expect(shantenInfo[0].value).toBe(0)
-                expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
-                expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
-                expect(shantenInfo[0].nextDrawInfo.improvements).toEqual(getAllTerimalAndHonorTiles())
-            })
-        })
-        describe('12 single terminal and honor tiles + 1 man/pin/sou tile from 2 to 8', () => {
-            it('Should be 1 shanten and 14 tiles to improve', () => {
-                const tiles = getTilesFromString('129m19p19s123456z')
-                const shantenInfo = getShantenInfo(tiles)
-
-                expect(shantenInfo[0].value).toBe(1)
-                expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([{type: SuitType.MANZU, value: 2}])
-                expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
-                expect(sortTiles(shantenInfo[0].nextDrawInfo.improvements)).toEqual(getAllTerimalAndHonorTiles())
-            })
-        })
-    })
     describe('Regular structure', () => {
         it('Should be 0 shanten for ryanmen + pair', () => {
             const tiles = getTilesFromString('1145m')
             const shantenInfo = getShantenInfo(tiles)
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 3}, {type: SuitType.MANZU, value: 6}])
         })
@@ -165,7 +56,6 @@ describe('getShantenInfo', () => {
             const shantenInfo = getShantenInfo(tiles)
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 1}, {type: SuitType.MANZU, value: 4}])
         })
@@ -174,7 +64,6 @@ describe('getShantenInfo', () => {
             const shantenInfo = getShantenInfo(tiles)
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.MANZU, value: 9}])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 9}])
         })
@@ -185,7 +74,6 @@ describe('getShantenInfo', () => {
             // todo doesn't work properly with compicated waits
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 2}, {type: SuitType.MANZU, value: 4}, {type: SuitType.MANZU, value: 5}])
         })
@@ -196,7 +84,6 @@ describe('getShantenInfo', () => {
             // todo doesn't work properly with compicated waits
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.MANZU, value: 3}])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 3}, {type: SuitType.MANZU, value: 4}])
         })
@@ -205,8 +92,6 @@ describe('getShantenInfo', () => {
             const shantenInfo = getShantenInfo(tiles)
 
             expect(shantenInfo[0].value).toBe(2)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
-            expect(shantenInfo[0].nextDrawInfo.toLeave).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.usefulTiles).toEqual([])
 
             const separatedTiles = [
@@ -241,8 +126,6 @@ describe('getShantenInfo', () => {
             const shantenInfo = getShantenInfo(tiles)
 
             expect(shantenInfo[0].value).toBe(2)
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
-            expect(shantenInfo[0].nextDrawInfo.toLeave).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.usefulTiles).toEqual([
                 {type: SuitType.MANZU, value: 1}, // remvoe
                 {type: SuitType.MANZU, value: 2}, // remvoe
@@ -275,7 +158,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.SOUZU, value: 9}])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
@@ -286,7 +168,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
@@ -297,7 +178,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
@@ -308,7 +188,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
@@ -319,7 +198,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
@@ -330,7 +208,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
@@ -341,7 +218,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
@@ -352,7 +228,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
@@ -363,7 +238,6 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
