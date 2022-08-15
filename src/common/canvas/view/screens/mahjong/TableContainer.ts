@@ -30,7 +30,7 @@ export class TableContainer {
     ): void {
         const edgeType = EdgeType.FRONT
         const [width] = getTileSize(Side.TOP, edgeType, scale)
-        let posX = endX
+        let posX = endX - width
 
         gameState.hands[Side.TOP].tiles.forEach(tile => {
             const tileView = new TileView(context, tile, posX, y, scale, Side.TOP, edgeType)
@@ -108,7 +108,7 @@ export class TableContainer {
         const [width, height] = getTileSize(Side.RIGHT, edgeType, scale)
         const posX = screenWidth - rightSideOffset - width
 
-        let posY = endY
+        let posY = endY - height
 
         gameState.hands[Side.RIGHT].tiles.forEach(tile => {
             const tileView = new TileView(context, tile, posX, posY, scale, Side.RIGHT, edgeType)

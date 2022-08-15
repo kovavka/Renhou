@@ -63,7 +63,6 @@ export function getKokushiMusoInfo(allTiles: Tile[]): KokushiMusoInfo | undefine
         }
     }
 
-    // todo 12
     if (duplicatesCount === 1 && orphansWithoutPair.length === 11) {
         // we do have a pair, but we have only 12 orphans in hand -> tempai with the only wait to the missing tile
         return {

@@ -1,7 +1,8 @@
 import { Tile } from '../../core/game-types/Tile'
 import { excludeTiles, hasIdenticalTiles, hasTiles, isTheSameTile } from '../tiles/tileContains'
-import { SuitType } from '../../core/game-types/SuitType'
+import { SuitType, TILE_TYPES_STR } from '../../core/game-types/SuitType'
 import { sortTiles } from '../game/sortTiles'
+import { tileToString } from './tileToString'
 
 export type MeldTileGroup = [Tile, Tile, Tile]
 export type TwoTilesGroup = [Tile, Tile] // pair or 2/3 sequential meld tiles
@@ -22,14 +23,7 @@ export type GroupingVariant = {
     uselessTiles: Tile[]
 }
 
-const TILE_TYPES = {
-    [SuitType.MANZU]: 'm',
-    [SuitType.PINZU]: 'p',
-    [SuitType.SOUZU]: 's',
-    [SuitType.JIHAI]: 'z',
-}
-
-export function splitHand(all: Tile[]): MeldVariant[] {
+export function splitToMelds(all: Tile[]): MeldVariant[] {
     const allVariants = splitTiles(all, getAllMeldsForTile)
 
     const result: MeldVariant[] = []
@@ -40,6 +34,11 @@ export function splitHand(all: Tile[]): MeldVariant[] {
         groupingVariant.forEach(group => {
             if (group.length === 3) {
                 melds.push(group)
+            } else if (group.length === 2) {
+                // we don't need to store pairs separately right now,
+                // we have it to support proper splitting for 3334 and 3335
+                remainingTiles.push(group[0])
+                remainingTiles.push(group[1])
             } else {
                 remainingTiles.push(group[0])
             }
@@ -107,13 +106,8 @@ export function splitToGroups(allTiles: Tile[]): GroupingVariant[] {
 }
 
 function groupToString(tiles: Tile[], printType: boolean): string {
-    const typeStr = printType ? TILE_TYPES[tiles[0].type] : ''
+    const typeStr = printType ? TILE_TYPES_STR[tiles[0].type] : ''
     return tiles.map(tile => tile.value).join('') + typeStr
-}
-
-function tileToString(tile: Tile, printType: boolean): string {
-    const typeStr = printType ? TILE_TYPES[tile.type] : ''
-    return tile.value + typeStr
 }
 
 export function handInfoToString(
@@ -185,12 +179,18 @@ function getPair(tile: Tile, remainingTiles: Tile[]): TwoTilesGroup | undefined 
     return undefined
 }
 
-function getAllMeldsForTile(tile: Tile, remainingTiles: Tile[]): MeldTileGroup[] {
-    const melds: MeldTileGroup[] = []
+function getAllMeldsForTile(tile: Tile, remainingTiles: Tile[]): (MeldTileGroup | TwoTilesGroup)[] {
+    const melds: (MeldTileGroup | TwoTilesGroup)[] = []
 
     const hasPon = hasIdenticalTiles(remainingTiles, tile, 3)
     if (hasPon) {
         melds.push([tile, tile, tile])
+
+        // needed to split hand like 3334 to [333 4] and [33 34]
+        const hasPair = hasIdenticalTiles(remainingTiles, tile, 2)
+        if (hasPair) {
+            melds.push([tile, tile])
+        }
     }
 
     const nextTilesForSequence = getNextTilesForSequence(tile)
@@ -208,12 +208,12 @@ function getAllMeldsForTile(tile: Tile, remainingTiles: Tile[]): MeldTileGroup[]
 function splitTiles<T extends Tile[]>(
     allTiles: Tile[],
     getTileGroups: (tile: Tile, remainingTiles: Tile[]) => T[]
-): T[][] {
+): (T | SingleTileGroup)[][] {
     if (allTiles.length === 0) {
         return []
     }
 
-    const variants: T[][] = []
+    const variants: (T | SingleTileGroup)[][] = []
 
     let previousTile: Tile | undefined = undefined
     for (let i = 0; i < allTiles.length && allTiles.length > 1; i++) {
@@ -225,7 +225,7 @@ function splitTiles<T extends Tile[]>(
 
         const allPossibleGroups = getTileGroups(tile, allTiles)
 
-        const groupVariants: T[][] = []
+        const groupVariants: (T | SingleTileGroup)[][] = []
 
         allPossibleGroups.forEach(group => {
             const remainingTiles: Tile[] = excludeTiles(allTiles, ...group)
@@ -245,7 +245,7 @@ function splitTiles<T extends Tile[]>(
     }
 
     if (variants.length === 0) {
-        return [allTiles.map(x => [x] as T)]
+        return [allTiles.map(x => [x])]
     }
 
     return variants

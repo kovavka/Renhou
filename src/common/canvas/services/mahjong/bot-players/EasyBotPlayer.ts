@@ -1,15 +1,12 @@
 import { IBotPlayer } from './IBotPlayer'
 import { Tile } from '../../../core/game-types/Tile'
 import { DrawTile } from '../../../core/game-types/DrawTile'
-import {
-    getShantenInfo,
-    getTilesToCompleteSequence,
-    ShantenInfo,
-} from '../../../utils/hand/getShantenInfo'
+import { getShantenInfo, ShantenInfo } from '../../../utils/hand/getShantenInfo'
 import { Hand } from '../../../core/game-types/Hand'
 import { excludeTiles, hasTiles, isTheSameTile } from '../../../utils/tiles/tileContains'
 import { SuitType } from '../../../core/game-types/SuitType'
 import { getClosestTiles } from '../../../utils/hand/getClosestTiles'
+import { getTilesToCompleteSequence } from '../../../utils/hand/getTilesToCompleteSequence'
 
 // todo check if bot can decide to discard separated tile to make a sequence with another one
 //  when it's just 2 separated tiles and we don't have a pair

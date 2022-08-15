@@ -1,11 +1,37 @@
 import { getShantenInfo } from '../getShantenInfo'
-import { hasTiles } from '../../tiles/tileContains'
+import { getUniqueTiles, hasTiles } from '../../tiles/tileContains'
 import { sortTiles } from '../../game/sortTiles'
 import { getTilesFromString } from './testUtils'
 import { SuitType } from '../../../core/game-types/SuitType'
 import { Tile } from '../../../core/game-types/Tile'
 
 describe('getShantenInfo', () => {
+    it('test waits', () => {
+        const tiles = getTilesFromString('1236667m78p1235s')
+        const infos = getShantenInfo(tiles)
+
+        expect(infos.length).toBe(1)
+        expect(infos[0].value).toBe(1)
+
+        const allWaits = infos[0].variants.reduce<Tile[]>((acc, variant) => {
+            if (variant.shanten === 1) {
+                acc.push(...variant.waits)
+            }
+            return acc
+        }, [])
+
+        const uniqueWaits = sortTiles(getUniqueTiles(allWaits))
+
+        expect(uniqueWaits).toEqual([
+            { type: SuitType.MANZU, value: 5 },
+            { type: SuitType.MANZU, value: 8 },
+            { type: SuitType.MANZU, value: 7 },
+            { type: SuitType.PINZU, value: 6 },
+            { type: SuitType.PINZU, value: 9 },
+            { type: SuitType.SOUZU, value: 5 },
+        ])
+    })
+
     describe('Toitoi', () => {
         describe('2 pairs, 2 group of 4 tiles and a unique tile', () => {
             it('Should be 2 shanten, 1 tile to discard and 30 to improve', () => {

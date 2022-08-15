@@ -1,8 +1,8 @@
 import { Tile } from '../../core/game-types/Tile'
-import { getUniqueTiles } from '../tiles/tileContains'
 import { getBaseShantenCount } from './getBaseShantenCount'
-import { GroupingVariant, MeldVariant, splitHand, splitToGroups } from './splitHand'
+import { GroupingVariant, MeldVariant, splitToMelds, splitToGroups } from './splitHand'
 import { getClosestTiles } from './getClosestTiles'
+import { getTilesToCompleteSequence } from './getTilesToCompleteSequence'
 
 // todo calculate most useless tile in hand by hand + draw tile
 
@@ -14,6 +14,7 @@ export type GroupingInfo = {
     canDiscardGroup: boolean
 }
 
+// todo maybe rename
 export type ShantenInfo = {
     /**
      *  number of tiles needed for reaching tempai
@@ -25,6 +26,8 @@ export type ShantenInfo = {
 
     variants: GroupingInfo[]
 }
+
+// todo maybe rename to getHandStructure
 
 /**
  * only regular structure
@@ -40,7 +43,7 @@ export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
         throw new Error('unsupported hand size')
     }
 
-    const handSplitVariants = splitHand(tiles)
+    const handSplitVariants = splitToMelds(tiles)
 
     const result: ShantenInfo[] = []
 
@@ -51,48 +54,6 @@ export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
 
     // todo maybe remove sort?
     return result.sort((a, b) => a.value - b.value)
-}
-
-// todo tests
-export function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): Tile[] {
-    const tilesToImprove: Tile[] = []
-    const minValue = Math.min(tileA.value, tileB.value)
-    const maxValue = Math.max(tileA.value, tileB.value)
-    if (maxValue - minValue === 2) {
-        // kanchan 1_3
-        tilesToImprove.push({
-            type: tileA.type,
-            value: minValue + 1,
-        })
-    } else if (minValue === 1) {
-        // penchan 12_
-        tilesToImprove.push({
-            type: tileB.type,
-            value: maxValue + 1,
-        })
-    } else if (maxValue === 9) {
-        // penchan _89
-        tilesToImprove.push({
-            type: tileA.type,
-            value: minValue - 1,
-        })
-    } else {
-        // ryanmen _23_
-        tilesToImprove.push({
-            type: tileA.type,
-            value: minValue - 1,
-        })
-        tilesToImprove.push({
-            type: tileB.type,
-            value: maxValue + 1,
-        })
-    }
-
-    return tilesToImprove
-}
-
-function getConnectors(tile: Tile): Tile[] {
-    return [...getClosestTiles(tile), tile]
 }
 
 function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenInfo {
