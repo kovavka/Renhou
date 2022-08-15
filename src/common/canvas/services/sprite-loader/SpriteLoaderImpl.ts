@@ -1,7 +1,7 @@
-import {ISpriteLoader} from "./ISpriteLoader";
-import {SuitType} from "../../core/game-types/SuitType";
+import { ISpriteLoader } from './ISpriteLoader'
+import { SuitType } from '../../core/game-types/SuitType'
 
-type TileLoadType = {img: HTMLImageElement, type: SuitType, value: number}
+type TileLoadType = { img: HTMLImageElement; type: SuitType; value: number }
 
 export class SpriteLoaderImpl implements ISpriteLoader {
     private _allLoaded = false
@@ -17,10 +17,10 @@ export class SpriteLoaderImpl implements ISpriteLoader {
     }
 
     private tiles: {
-        man: HTMLImageElement[],
-        pin: HTMLImageElement[],
-        sou: HTMLImageElement[],
-        jihai: HTMLImageElement[],
+        man: HTMLImageElement[]
+        pin: HTMLImageElement[]
+        sou: HTMLImageElement[]
+        jihai: HTMLImageElement[]
     } = {
         man: [],
         pin: [],
@@ -34,7 +34,6 @@ export class SpriteLoaderImpl implements ISpriteLoader {
                 resolve()
             })
         })
-
     }
 
     private async initTiles() {
@@ -51,7 +50,7 @@ export class SpriteLoaderImpl implements ISpriteLoader {
 
         const data = await Promise.all(all)
         data.forEach(result => {
-            const {img, type, value} = result
+            const { img, type, value } = result
             switch (type) {
                 case SuitType.MANZU:
                     this.tiles.man[value - 1] = img
@@ -71,13 +70,12 @@ export class SpriteLoaderImpl implements ISpriteLoader {
         this._allLoaded = true
     }
 
-
     private async loadTile(type: SuitType, value: number): Promise<TileLoadType> {
         return new Promise<TileLoadType>(resolve => {
             const img = new Image()
             img.src = require(`../../../img/tiles/${type}${value}.svg`)
             img.onload = () => {
-                return resolve({img, type, value})
+                return resolve({ img, type, value })
             }
         })
     }

@@ -1,8 +1,8 @@
-import {getKokushiMusoInfo} from "../getKokushiMusoInfo";
-import {getTilesFromString} from "./testUtils";
-import {SuitType} from "../../../core/game-types/SuitType";
-import {getTerimalAndHonors} from "../getTerimalAndHonors";
-import {sortTiles} from "../../game/sortTiles";
+import { getKokushiMusoInfo } from '../getKokushiMusoInfo'
+import { getTilesFromString } from './testUtils'
+import { SuitType } from '../../../core/game-types/SuitType'
+import { getTerimalAndHonors } from '../getTerimalAndHonors'
+import { sortTiles } from '../../game/sortTiles'
 
 describe('getKokushiMusoInfo', () => {
     describe('Tempai', () => {
@@ -15,7 +15,7 @@ describe('getKokushiMusoInfo', () => {
             }
 
             expect(info.shanten).toBe(0)
-            expect(info.tilesToImprove).toEqual([{type: SuitType.JIHAI, value: 7}])
+            expect(info.tilesToImprove).toEqual([{ type: SuitType.JIHAI, value: 7 }])
             expect(info.tilesToDiscard).toEqual([])
         })
 
@@ -45,7 +45,7 @@ describe('getKokushiMusoInfo', () => {
 
                 expect(info.shanten).toBe(1)
                 expect(sortTiles(info.tilesToImprove)).toEqual(getTerimalAndHonors())
-                expect(info.tilesToDiscard).toEqual([{type: SuitType.MANZU, value: 2}])
+                expect(info.tilesToDiscard).toEqual([{ type: SuitType.MANZU, value: 2 }])
             })
 
             it('1 shanten and 2 tiles to improve for 10 single orphans + orphan pair + 1 other tile', () => {
@@ -58,10 +58,10 @@ describe('getKokushiMusoInfo', () => {
 
                 expect(info.shanten).toBe(1)
                 expect(info.tilesToImprove).toEqual([
-                    {type: SuitType.JIHAI, value: 6},
-                    {type: SuitType.JIHAI, value: 7},
+                    { type: SuitType.JIHAI, value: 6 },
+                    { type: SuitType.JIHAI, value: 7 },
                 ])
-                expect(info.tilesToDiscard).toEqual([{type: SuitType.MANZU, value: 2}])
+                expect(info.tilesToDiscard).toEqual([{ type: SuitType.MANZU, value: 2 }])
             })
 
             it('3 shanten and 13 tiles to improve for 11 orphans + 1 other + 1 non-orphan pair', () => {
@@ -75,8 +75,8 @@ describe('getKokushiMusoInfo', () => {
                 expect(info.shanten).toBe(3)
                 expect(info.tilesToImprove).toEqual(getTerimalAndHonors())
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.MANZU, value: 2},
-                    {type: SuitType.PINZU, value: 5},
+                    { type: SuitType.MANZU, value: 2 },
+                    { type: SuitType.PINZU, value: 5 },
                 ])
             })
         })
@@ -92,12 +92,12 @@ describe('getKokushiMusoInfo', () => {
 
                 expect(info.shanten).toBe(1)
                 expect(info.tilesToImprove).toEqual([
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
                 ])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.JIHAI, value: 5},
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.JIHAI, value: 5 },
                 ])
             })
 
@@ -111,13 +111,13 @@ describe('getKokushiMusoInfo', () => {
 
                 expect(info.shanten).toBe(2)
                 expect(info.tilesToImprove).toEqual([
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
-                    {type: SuitType.SOUZU, value: 9},
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
+                    { type: SuitType.SOUZU, value: 9 },
                 ])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.JIHAI, value: 5},
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.JIHAI, value: 5 },
                 ])
             })
 
@@ -131,12 +131,10 @@ describe('getKokushiMusoInfo', () => {
 
                 expect(info.shanten).toBe(1)
                 expect(info.tilesToImprove).toEqual([
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 9},
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 9 },
                 ])
-                expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 1},
-                ])
+                expect(info.tilesToDiscard).toEqual([{ type: SuitType.PINZU, value: 1 }])
             })
         })
     })

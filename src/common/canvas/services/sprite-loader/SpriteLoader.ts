@@ -1,5 +1,5 @@
-import {ISpriteLoader} from "./ISpriteLoader";
-import {SpriteLoaderImpl} from "./SpriteLoaderImpl";
+import { ISpriteLoader } from './ISpriteLoader'
+import { SpriteLoaderImpl } from './SpriteLoaderImpl'
 
 export class SpriteLoader {
     private static _instance: ISpriteLoader | undefined

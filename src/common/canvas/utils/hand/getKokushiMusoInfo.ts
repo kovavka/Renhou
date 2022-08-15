@@ -1,7 +1,7 @@
-import {Tile} from "../../core/game-types/Tile";
-import {getIdenticalTileCount, getUniqueTiles} from "../tiles/tileContains";
-import {isTerminalOrHonorTile} from "../tiles/isTerminalOrHonorTile";
-import {getTerimalAndHonors} from "./getTerimalAndHonors";
+import { Tile } from '../../core/game-types/Tile'
+import { getIdenticalTileCount, getUniqueTiles } from '../tiles/tileContains'
+import { isTerminalOrHonorTile } from '../tiles/isTerminalOrHonorTile'
+import { getTerimalAndHonors } from './getTerimalAndHonors'
 
 export type KokushiMusoInfo = {
     /**

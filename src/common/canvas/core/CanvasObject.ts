@@ -1,8 +1,7 @@
-import {Rectangle} from "./Rectangle";
-import {Context} from "./Context";
-import {Position} from "./Position";
-import {Tile} from "./game-types/Tile";
-
+import { Rectangle } from './Rectangle'
+import { Context } from './Context'
+import { Position } from './Position'
+import { Tile } from './game-types/Tile'
 
 export abstract class CanvasObject {
     bounds: Rectangle
@@ -28,7 +27,6 @@ export abstract class CanvasObject {
     }
 
     abstract render(): void
-
 
     clickHandler(): void {
         this._clickHandler?.()

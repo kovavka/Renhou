@@ -1,6 +1,6 @@
-import {hasTempai} from "../hasTempai";
-import {SuitType} from "../../../core/game-types/SuitType";
-import {getTilesFromString} from "./testUtils";
+import { hasTempai } from '../hasTempai'
+import { SuitType } from '../../../core/game-types/SuitType'
+import { getTilesFromString } from './testUtils'
 
 describe('hasTempai', () => {
     describe('Chiitoi', () => {
@@ -94,7 +94,7 @@ describe('hasTempai', () => {
 
     describe('1 tile', () => {
         it('Always tempai', () => {
-            expect(hasTempai([{type: SuitType.MANZU, value: 1}])).toBe(true)
+            expect(hasTempai([{ type: SuitType.MANZU, value: 1 }])).toBe(true)
         })
     })
 
@@ -168,5 +168,4 @@ describe('hasTempai', () => {
             expect(hasTempai(tiles)).toBe(false)
         })
     })
-
 })

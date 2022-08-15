@@ -1,4 +1,4 @@
-import signals from "signals";
+import signals from 'signals'
 
 export enum ScreenType {
     MENU,

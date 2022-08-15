@@ -1,5 +1,5 @@
-import {Tile} from "./Tile";
-import {Meld} from "./Meld";
+import { Tile } from './Tile'
+import { Meld } from './Meld'
 
 export type Hand = {
     tiles: Tile[]

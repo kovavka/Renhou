@@ -1,9 +1,9 @@
-import {getShantenInfo} from "../getShantenInfo";
-import {hasTiles} from "../../tiles/tileContains";
-import {sortTiles} from "../../game/sortTiles";
-import {getTilesFromString} from "./testUtils";
-import {SuitType} from "../../../core/game-types/SuitType";
-import {Tile} from "../../../core/game-types/Tile";
+import { getShantenInfo } from '../getShantenInfo'
+import { hasTiles } from '../../tiles/tileContains'
+import { sortTiles } from '../../game/sortTiles'
+import { getTilesFromString } from './testUtils'
+import { SuitType } from '../../../core/game-types/SuitType'
+import { Tile } from '../../../core/game-types/Tile'
 
 describe('getShantenInfo', () => {
     describe('Toitoi', () => {
@@ -17,8 +17,14 @@ describe('getShantenInfo', () => {
                 //  2. we should check if we are going to wait 5th tile of the suit
                 expect(shantenInfo[0].value).toBe(2)
                 // expect(shantenInfo[0].nextDrawInfo.toDiscard).toEqual([{type: SuitType.PINZU, value: 1}, {type: SuitType.SOUZU, value: 2}])
-                expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.SOUZU, value: 9}])
-                expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 1}, {type: SuitType.MANZU, value: 9}, {type: SuitType.SOUZU, value: 9}])
+                expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([
+                    { type: SuitType.SOUZU, value: 9 },
+                ])
+                expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 9 },
+                ])
             })
         })
     })
@@ -29,8 +35,12 @@ describe('getShantenInfo', () => {
             const shantenInfo = getShantenInfo(tiles)
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.JIHAI, value: 5}])
-            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.JIHAI, value: 5}])
+            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([
+                { type: SuitType.JIHAI, value: 5 },
+            ])
+            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
+                { type: SuitType.JIHAI, value: 5 },
+            ])
         })
         it('Should be only 1 tile to improve when ryanmen wait', () => {
             const tiles = getTilesFromString('112233m12233s55z')
@@ -38,7 +48,10 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(0)
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
-            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.SOUZU, value: 1}, {type: SuitType.SOUZU, value: 4}])
+            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
+                { type: SuitType.SOUZU, value: 1 },
+                { type: SuitType.SOUZU, value: 4 },
+            ])
         })
     })
 
@@ -49,7 +62,10 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(0)
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
-            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 3}, {type: SuitType.MANZU, value: 6}])
+            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
+                { type: SuitType.MANZU, value: 3 },
+                { type: SuitType.MANZU, value: 6 },
+            ])
         })
         it('Should be 0 shanten for pair + pair', () => {
             const tiles = getTilesFromString('1144m')
@@ -57,15 +73,22 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(0)
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
-            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 1}, {type: SuitType.MANZU, value: 4}])
+            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
+                { type: SuitType.MANZU, value: 1 },
+                { type: SuitType.MANZU, value: 4 },
+            ])
         })
         it('Should be 0 shanten for meld + separated tile', () => {
             const tiles = getTilesFromString('1239m')
             const shantenInfo = getShantenInfo(tiles)
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.MANZU, value: 9}])
-            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 9}])
+            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([
+                { type: SuitType.MANZU, value: 9 },
+            ])
+            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
+                { type: SuitType.MANZU, value: 9 },
+            ])
         })
         it('Should get 3 waits for hand like 3334', () => {
             const tiles = getTilesFromString('3334m')
@@ -75,7 +98,11 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(0)
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([])
-            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 2}, {type: SuitType.MANZU, value: 4}, {type: SuitType.MANZU, value: 5}])
+            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
+                { type: SuitType.MANZU, value: 2 },
+                { type: SuitType.MANZU, value: 4 },
+                { type: SuitType.MANZU, value: 5 },
+            ])
         })
         it('Should get 2 waits for hand like 3555', () => {
             const tiles = getTilesFromString('3555m')
@@ -84,8 +111,13 @@ describe('getShantenInfo', () => {
             // todo doesn't work properly with compicated waits
 
             expect(shantenInfo[0].value).toBe(0)
-            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.MANZU, value: 3}])
-            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([{type: SuitType.MANZU, value: 3}, {type: SuitType.MANZU, value: 4}])
+            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([
+                { type: SuitType.MANZU, value: 3 },
+            ])
+            expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
+                { type: SuitType.MANZU, value: 3 },
+                { type: SuitType.MANZU, value: 4 },
+            ])
         })
         it('Should get 5 possible improvements for part like 3555m', () => {
             const tiles = getTilesFromString('3555m149s')
@@ -95,29 +127,29 @@ describe('getShantenInfo', () => {
             expect(shantenInfo[0].nextDrawInfo.usefulTiles).toEqual([])
 
             const separatedTiles = [
-                {type: SuitType.MANZU, value: 3},
-                {type: SuitType.SOUZU, value: 1},
-                {type: SuitType.SOUZU, value: 4},
-                {type: SuitType.SOUZU, value: 9},
+                { type: SuitType.MANZU, value: 3 },
+                { type: SuitType.SOUZU, value: 1 },
+                { type: SuitType.SOUZU, value: 4 },
+                { type: SuitType.SOUZU, value: 9 },
             ]
             expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual(separatedTiles)
 
             const improvements = [
-                {type: SuitType.MANZU, value: 1},
-                {type: SuitType.MANZU, value: 2},
-                {type: SuitType.MANZU, value: 3},
-                {type: SuitType.MANZU, value: 4},
-                {type: SuitType.MANZU, value: 5},
+                { type: SuitType.MANZU, value: 1 },
+                { type: SuitType.MANZU, value: 2 },
+                { type: SuitType.MANZU, value: 3 },
+                { type: SuitType.MANZU, value: 4 },
+                { type: SuitType.MANZU, value: 5 },
 
-                {type: SuitType.SOUZU, value: 1},
-                {type: SuitType.SOUZU, value: 2},
-                {type: SuitType.SOUZU, value: 3},
-                {type: SuitType.SOUZU, value: 4},
-                {type: SuitType.SOUZU, value: 5},
-                {type: SuitType.SOUZU, value: 6},
-                {type: SuitType.SOUZU, value: 7},
-                {type: SuitType.SOUZU, value: 8},
-                {type: SuitType.SOUZU, value: 9},
+                { type: SuitType.SOUZU, value: 1 },
+                { type: SuitType.SOUZU, value: 2 },
+                { type: SuitType.SOUZU, value: 3 },
+                { type: SuitType.SOUZU, value: 4 },
+                { type: SuitType.SOUZU, value: 5 },
+                { type: SuitType.SOUZU, value: 6 },
+                { type: SuitType.SOUZU, value: 7 },
+                { type: SuitType.SOUZU, value: 8 },
+                { type: SuitType.SOUZU, value: 9 },
             ]
             expect(sortTiles(shantenInfo[0].nextDrawInfo.improvements)).toEqual(improvements)
         })
@@ -127,27 +159,29 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(2)
             expect(shantenInfo[0].nextDrawInfo.usefulTiles).toEqual([
-                {type: SuitType.MANZU, value: 1}, // remvoe
-                {type: SuitType.MANZU, value: 2}, // remvoe
-                {type: SuitType.MANZU, value: 5}, // remvoe
-                {type: SuitType.MANZU, value: 6}, // remvoe
-                {type: SuitType.MANZU, value: 8},
+                { type: SuitType.MANZU, value: 1 }, // remvoe
+                { type: SuitType.MANZU, value: 2 }, // remvoe
+                { type: SuitType.MANZU, value: 5 }, // remvoe
+                { type: SuitType.MANZU, value: 6 }, // remvoe
+                { type: SuitType.MANZU, value: 8 },
 
-                {type: SuitType.SOUZU, value: 1},  // remvoe
-                {type: SuitType.SOUZU, value: 2}, // remvoe
-                {type: SuitType.SOUZU, value: 4},
-                {type: SuitType.SOUZU, value: 7},
-                {type: SuitType.SOUZU, value: 8},
+                { type: SuitType.SOUZU, value: 1 }, // remvoe
+                { type: SuitType.SOUZU, value: 2 }, // remvoe
+                { type: SuitType.SOUZU, value: 4 },
+                { type: SuitType.SOUZU, value: 7 },
+                { type: SuitType.SOUZU, value: 8 },
             ])
-            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.SOUZU, value: 9}])
+            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([
+                { type: SuitType.SOUZU, value: 9 },
+            ])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([
                 ...tiles,
-                {type: SuitType.MANZU, value: 3},
-                {type: SuitType.MANZU, value: 4},
-                {type: SuitType.MANZU, value: 7},
+                { type: SuitType.MANZU, value: 3 },
+                { type: SuitType.MANZU, value: 4 },
+                { type: SuitType.MANZU, value: 7 },
 
-                {type: SuitType.SOUZU, value: 3},
-                {type: SuitType.SOUZU, value: 9},
+                { type: SuitType.SOUZU, value: 3 },
+                { type: SuitType.SOUZU, value: 9 },
             ])
         })
 
@@ -158,7 +192,9 @@ describe('getShantenInfo', () => {
 
             expect(shantenInfo[0].value).toBe(4)
             expect(shantenInfo[0].splittingInfo.melds).toEqual([[]])
-            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([{type: SuitType.SOUZU, value: 9}])
+            expect(shantenInfo[0].nextDrawInfo.safeToReplace).toEqual([
+                { type: SuitType.SOUZU, value: 9 },
+            ])
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
 
@@ -254,7 +290,10 @@ describe('getShantenInfo', () => {
             const tiles = getTilesFromString('7m889p237799s123z')
             const shantenInfo = getShantenInfo(tiles)
 
-            shouldContain(shantenInfo[1].nextDrawInfo.improvements, {type: SuitType.PINZU, value: 7})
+            shouldContain(shantenInfo[1].nextDrawInfo.improvements, {
+                type: SuitType.PINZU,
+                value: 7,
+            })
         })
 
         // 18m118p278s14667z + 6z
@@ -262,7 +301,10 @@ describe('getShantenInfo', () => {
             const tiles = getTilesFromString('18m118p278s14667z')
             const shantenInfo = getShantenInfo(tiles)
 
-            shouldContain(shantenInfo[1].nextDrawInfo.improvements, {type: SuitType.PINZU, value: 6})
+            shouldContain(shantenInfo[1].nextDrawInfo.improvements, {
+                type: SuitType.PINZU,
+                value: 6,
+            })
         })
 
         // 67m5778p44668s33z + 7m
@@ -281,5 +323,4 @@ describe('getShantenInfo', () => {
             expect(shantenInfo[0].nextDrawInfo.improvements).toEqual([])
         })
     })
-
 })

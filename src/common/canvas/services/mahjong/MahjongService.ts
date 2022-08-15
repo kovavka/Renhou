@@ -1,5 +1,5 @@
-import {IMahjongService} from "./IMahjongService";
-import {MahjongServiceImpl} from "./MahjongServiceImpl";
+import { IMahjongService } from './IMahjongService'
+import { MahjongServiceImpl } from './MahjongServiceImpl'
 
 export class MahjongService {
     private static _instance: IMahjongService | undefined

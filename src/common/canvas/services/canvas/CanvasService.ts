@@ -1,5 +1,5 @@
-import {ICanvasService} from "./ICanvasService";
-import {CanvasServiceImpl} from "./CanvasServiceImpl";
+import { ICanvasService } from './ICanvasService'
+import { CanvasServiceImpl } from './CanvasServiceImpl'
 
 /**
  * responsibilities:

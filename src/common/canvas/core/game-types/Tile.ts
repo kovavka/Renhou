@@ -1,4 +1,4 @@
-import {SuitType} from "./SuitType";
+import { SuitType } from './SuitType'
 
 export type Tile = {
     type: SuitType

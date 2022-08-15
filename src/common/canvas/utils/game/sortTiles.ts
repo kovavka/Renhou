@@ -1,5 +1,5 @@
-import {Tile} from "../../core/game-types/Tile";
-import {SuitType} from "../../core/game-types/SuitType";
+import { Tile } from '../../core/game-types/Tile'
+import { SuitType } from '../../core/game-types/SuitType'
 
 function typeToNumber(type: SuitType) {
     switch (type) {
@@ -18,9 +18,7 @@ function typeToNumber(type: SuitType) {
 
 export function sortTiles(tiles: Tile[]): Tile[] {
     return tiles.sort((a, b) => {
-        if (a.type === b.type)
-            return a.value - b.value
-
+        if (a.type === b.type) return a.value - b.value
 
         return typeToNumber(a.type) - typeToNumber(b.type)
     })

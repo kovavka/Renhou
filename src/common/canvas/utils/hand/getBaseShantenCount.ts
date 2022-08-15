@@ -1,6 +1,11 @@
-export function getBaseShantenCount(handSize: number, meldsCount: number, groupsCount: number, hasPair: boolean) {
+export function getBaseShantenCount(
+    handSize: number,
+    meldsCount: number,
+    groupsCount: number,
+    hasPair: boolean
+) {
     // 13 -> 6; 10 -> 6; 7 -> 4; 4 -> 2;
-    const maxPossibleShantenCount = Math.min(6, (handSize - 1) / 3 * 2)
+    const maxPossibleShantenCount = Math.min(6, ((handSize - 1) / 3) * 2)
 
     const maxMeldsCount = Math.floor(handSize / 3)
     let meldsLeft = maxMeldsCount - meldsCount

@@ -1,4 +1,3 @@
-
 // todo refactor (really old code)
 
 enum WaitPatternType {
@@ -8,16 +7,19 @@ enum WaitPatternType {
     RYANMEN_PENCHAN,
 }
 
-export function generateChinitsuTempai(handLength: number): {hand: number[], possibleTilesToWait: number[]} {
+export function generateChinitsuTempai(handLength: number): {
+    hand: number[]
+    possibleTilesToWait: number[]
+} {
     let tileLeftByValue: number[] = []
-    for(let i = 1; i <= 9; i++) {
+    for (let i = 1; i <= 9; i++) {
         tileLeftByValue[i] = 4
     }
 
     let forms = getForms()
 
     let hand: number[] = []
-    while(hand.length < handLength) {
+    while (hand.length < handLength) {
         let remaining = handLength - hand.length
         if (remaining > 4 || remaining === 3) {
             let rand = Math.floor(Math.random() * forms.length)
@@ -35,7 +37,7 @@ export function generateChinitsuTempai(handLength: number): {hand: number[], pos
                 hand.push(tile)
                 forms = updateForms(forms, tileLeftByValue)
             } else {
-                let pair = getRandomTile(tileLeftByValue.map(x => x > 1 ? x : 0))
+                let pair = getRandomTile(tileLeftByValue.map(x => (x > 1 ? x : 0)))
                 tileLeftByValue[pair] -= 2
                 hand.push(pair)
                 hand.push(pair)
@@ -152,7 +154,7 @@ function getRandomTile(tileCounts: number[]): number {
     let count = tileCounts.reduce((a, b) => a + b)
     let rand = 1 + Math.random() * (count - 1)
 
-    for(let tile in tileCounts) {
+    for (let tile in tileCounts) {
         let tileCount = tileCounts[tile]
         if (rand > tileCount) {
             rand -= tileCount

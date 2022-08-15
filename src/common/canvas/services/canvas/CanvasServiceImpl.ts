@@ -1,17 +1,17 @@
-import {ICanvasService} from "./ICanvasService";
-import {Context} from "../../core/Context";
-import {TileView} from "../../view/components/tile/TileView";
-import {Side} from "../../core/game-types/Side";
-import signals from "signals";
-import {SpriteLoader} from "../sprite-loader/SpriteLoader";
-import {TableView} from "../../view/components/table/TableView";
-import {MahjongService} from "../mahjong/MahjongService";
-import {EdgeType} from "../../view/components/tile/EdgeType";
-import {CanvasObject} from "../../core/CanvasObject";
-import {TableContainer} from "../../view/screens/mahjong/TableContainer";
-import {AppService} from "../app/AppService";
-import {ScreenType} from "../app/IAppService";
-import {MenuContainer} from "../../view/screens/menu/MenuContainer";
+import { ICanvasService } from './ICanvasService'
+import { Context } from '../../core/Context'
+import { TileView } from '../../view/components/tile/TileView'
+import { Side } from '../../core/game-types/Side'
+import signals from 'signals'
+import { SpriteLoader } from '../sprite-loader/SpriteLoader'
+import { TableView } from '../../view/components/table/TableView'
+import { MahjongService } from '../mahjong/MahjongService'
+import { EdgeType } from '../../view/components/tile/EdgeType'
+import { CanvasObject } from '../../core/CanvasObject'
+import { TableContainer } from '../../view/screens/mahjong/TableContainer'
+import { AppService } from '../app/AppService'
+import { ScreenType } from '../app/IAppService'
+import { MenuContainer } from '../../view/screens/menu/MenuContainer'
 
 export class CanvasServiceImpl implements ICanvasService {
     private context: Context | undefined
@@ -19,7 +19,7 @@ export class CanvasServiceImpl implements ICanvasService {
     private _width: number = 0
     private _height: number = 0
 
-    onResize: signals.Signal<{width: number, height: number}> = new signals.Signal()
+    onResize: signals.Signal<{ width: number; height: number }> = new signals.Signal()
 
     get width(): number {
         return this._width
@@ -39,8 +39,6 @@ export class CanvasServiceImpl implements ICanvasService {
     }
 
     updateCanvas(canvas: HTMLCanvasElement) {
-
-
         this.canvas = canvas
         this.context = canvas.getContext('2d') ?? undefined
 
@@ -50,16 +48,21 @@ export class CanvasServiceImpl implements ICanvasService {
     updateSize(width: number, height: number): void {
         this._width = width
         this._height = height
-        this.onResize.dispatch({width, height})
+        this.onResize.dispatch({ width, height })
         this.render()
     }
 
     clickHandler(x: number, y: number): void {
-        const {gameObjects} = this
+        const { gameObjects } = this
         for (let i = gameObjects.length - 1; i >= 0; i--) {
             const obj = gameObjects[i]
 
-            if (x > obj.bounds.x && x < obj.bounds.bottomRight.x && y > obj.bounds.y && y < obj.bounds.bottomRight.y) {
+            if (
+                x > obj.bounds.x &&
+                x < obj.bounds.bottomRight.x &&
+                y > obj.bounds.y &&
+                y < obj.bounds.bottomRight.y
+            ) {
                 obj.clickHandler()
                 return
             }
@@ -74,7 +77,7 @@ export class CanvasServiceImpl implements ICanvasService {
 
     private render(): void {
         this.gameObjects = []
-        const {canvas, context, width, height} = this
+        const { canvas, context, width, height } = this
         if (!this.canRender() || context === undefined || canvas === undefined) {
             return
         }

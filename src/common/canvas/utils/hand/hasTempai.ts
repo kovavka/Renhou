@@ -1,8 +1,14 @@
-import {Tile} from "../../core/game-types/Tile";
-import {getShantenInfo} from "./getShantenInfo";
+import { Tile } from '../../core/game-types/Tile'
+import { getShantenInfo } from './getShantenInfo'
 
 export function hasTempai(tiles: Tile[]): boolean {
-    if (tiles.length !== 1 && tiles.length !== 4 && tiles.length !== 7 && tiles.length !== 10 && tiles.length !== 13) {
+    if (
+        tiles.length !== 1 &&
+        tiles.length !== 4 &&
+        tiles.length !== 7 &&
+        tiles.length !== 10 &&
+        tiles.length !== 13
+    ) {
         return false
     }
 

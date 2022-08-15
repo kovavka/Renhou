@@ -1,5 +1,5 @@
-import {Tile} from "../../core/game-types/Tile";
-import {groupIdenticalTiles} from "../tiles/groupIdenticalTiles";
+import { Tile } from '../../core/game-types/Tile'
+import { groupIdenticalTiles } from '../tiles/groupIdenticalTiles'
 
 export type ChiitoiInfo = {
     /**
@@ -39,7 +39,7 @@ export function getChiitoiInfo(allTiles: Tile[]): ChiitoiInfo | undefined {
     let groupsOf3Count = 0
 
     const groups: Tile[] = []
-    groupIdenticalTiles(allTiles).forEach(({tile, count }) => {
+    groupIdenticalTiles(allTiles).forEach(({ tile, count }) => {
         switch (count) {
             case 1:
                 singleTiles.push(tile)
@@ -67,7 +67,8 @@ export function getChiitoiInfo(allTiles: Tile[]): ChiitoiInfo | undefined {
     // in order to get tempai we need to replace 3rd and 4th tiles to something else.
     // if we have enough single tiles we will replace it to one of those and make a pair at once
     // otherwise we need to draw something different and get a pair in another turn
-    const tooMuchTilesToDiscard = tilesToDiscardSize !== 0 && tilesToDiscardSize >= singleTiles.length
+    const tooMuchTilesToDiscard =
+        tilesToDiscardSize !== 0 && tilesToDiscardSize >= singleTiles.length
 
     const baseShantenCount = MAX_PAIRS_NUMBER - groups.length
     // in most cases tilesToDiscardSize and baseShantenCount would be the same,
@@ -81,4 +82,3 @@ export function getChiitoiInfo(allTiles: Tile[]): ChiitoiInfo | undefined {
         shanten: shantenCount,
     }
 }
-

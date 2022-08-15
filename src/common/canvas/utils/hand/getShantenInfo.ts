@@ -1,8 +1,8 @@
-import {Tile} from "../../core/game-types/Tile";
-import {SuitType} from "../../core/game-types/SuitType";
-import {getUniqueTiles} from "../tiles/tileContains";
-import {getBaseShantenCount} from "./getBaseShantenCount";
-import {MeldVariant, splitHand, splitToGroups} from "./splitHand";
+import { Tile } from '../../core/game-types/Tile'
+import { SuitType } from '../../core/game-types/SuitType'
+import { getUniqueTiles } from '../tiles/tileContains'
+import { getBaseShantenCount } from './getBaseShantenCount'
+import { MeldVariant, splitHand, splitToGroups } from './splitHand'
 
 // todo calculate most useless tile in hand by hand + draw tile
 
@@ -49,7 +49,13 @@ export type ShantenInfo = {
  * only regular structure
  */
 export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
-    if (tiles.length !== 1 && tiles.length !== 4 && tiles.length !== 7 && tiles.length !== 10 && tiles.length !== 13) {
+    if (
+        tiles.length !== 1 &&
+        tiles.length !== 4 &&
+        tiles.length !== 7 &&
+        tiles.length !== 10 &&
+        tiles.length !== 13
+    ) {
         throw new Error('unsupported hand size')
     }
 
@@ -66,7 +72,6 @@ export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
     return result.sort((a, b) => a.value - b.value)
 }
 
-
 // todo add tests
 function getClosestTiles(tile: Tile): Tile[] {
     if (tile.type === SuitType.JIHAI) {
@@ -80,7 +85,7 @@ function getClosestTiles(tile: Tile): Tile[] {
         // penchan 21_
         tilesToImprove.push({
             type: tile.type,
-            value: tile.value - 1
+            value: tile.value - 1,
         })
     }
 
@@ -88,7 +93,7 @@ function getClosestTiles(tile: Tile): Tile[] {
         // kanchan 3_1
         tilesToImprove.push({
             type: tile.type,
-            value: tile.value - 2
+            value: tile.value - 2,
         })
     }
 
@@ -96,7 +101,7 @@ function getClosestTiles(tile: Tile): Tile[] {
         // kanchan 7_9
         tilesToImprove.push({
             type: tile.type,
-            value: tile.value + 2
+            value: tile.value + 2,
         })
     }
 
@@ -105,7 +110,7 @@ function getClosestTiles(tile: Tile): Tile[] {
         // penchan _89
         tilesToImprove.push({
             type: tile.type,
-            value: tile.value + 1
+            value: tile.value + 1,
         })
     }
 
@@ -119,35 +124,35 @@ function getConnectors(tile: Tile): Tile[] {
 
 function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): Tile[] {
     const tilesToImprove: Tile[] = []
-    const minValue =  Math.min(tileA.value, tileB.value)
-    const maxValue =  Math.max(tileA.value, tileB.value)
-    if ((maxValue - minValue) === 2) {
+    const minValue = Math.min(tileA.value, tileB.value)
+    const maxValue = Math.max(tileA.value, tileB.value)
+    if (maxValue - minValue === 2) {
         // kanchan 1_3
         tilesToImprove.push({
             type: tileA.type,
-            value: minValue + 1
+            value: minValue + 1,
         })
     } else if (minValue === 1) {
         // penchan 12_
         tilesToImprove.push({
             type: tileB.type,
-            value: maxValue + 1
+            value: maxValue + 1,
         })
     } else if (maxValue === 9) {
         // penchan _89
         tilesToImprove.push({
             type: tileA.type,
-            value: minValue - 1
+            value: minValue - 1,
         })
     } else {
         // ryanmen _23_
         tilesToImprove.push({
             type: tileA.type,
-            value: minValue - 1
+            value: minValue - 1,
         })
         tilesToImprove.push({
             type: tileB.type,
-            value: maxValue + 1
+            value: maxValue + 1,
         })
     }
 
@@ -155,7 +160,7 @@ function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): Tile[] {
 }
 
 function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenInfo {
-    const {melds, remainingTiles} = info
+    const { melds, remainingTiles } = info
 
     if (allTiles.length === 1) {
         const singeTile = allTiles[0]
@@ -176,9 +181,14 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
     const groupingVariants = splitToGroups(info.remainingTiles)
 
     groupingVariants.forEach(variant => {
-        const {pairs, sequences} = variant
+        const { pairs, sequences } = variant
 
-        const shantenValue = getBaseShantenCount(allTiles.length, melds.length, sequences.length + pairs.length, pairs.length > 0)
+        const shantenValue = getBaseShantenCount(
+            allTiles.length,
+            melds.length,
+            sequences.length + pairs.length,
+            pairs.length > 0
+        )
         minShantenValue = Math.min(shantenValue, minShantenValue)
     })
 
@@ -189,16 +199,19 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
     const allConnectors: Tile[] = []
 
     groupingVariants.forEach(variant => {
-        const {pairs, sequences, uselessTiles} = variant
+        const { pairs, sequences, uselessTiles } = variant
         const hasPair = pairs.length > 0
         const groupsCount = sequences.length + pairs.length
 
-
-        const shantenValue = getBaseShantenCount(allTiles.length, melds.length, groupsCount, pairs.length > 0)
+        const shantenValue = getBaseShantenCount(
+            allTiles.length,
+            melds.length,
+            groupsCount,
+            pairs.length > 0
+        )
         if (shantenValue > minShantenValue) {
             return // todo maybe we should also check improvements for variants with shanten - 1?
         }
-
 
         // we don't have enough groups when shanten >= groups length,
         // so it order to reach tempai we need to get 1+ groups
@@ -206,14 +219,12 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
         // [23 56 89 2] don't need any more groups
         const needToGetMoreGroups = shantenValue !== 0 && groupsCount <= minShantenValue
 
-
         // we have too many groups and we have to discard one of them to reach tempai
         // BUT we shouldn't discard pair if it's the only one
         // e.g. [23 56 89 2], 3 < 2 -> can discard
         // [12 45 78 12 5 9], 4 >= 4 -> can not discard
         const canDiscardSomeGroups = groupsCount > minShantenValue
         const canDiscardPair = canDiscardSomeGroups && pairs.length > 1
-
 
         // it's impossible to improve hand with upgrading pair to pon,
         // when we all others groups are sequences
@@ -251,7 +262,6 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
 
             tilesToImprove.push(...getTilesToCompleteSequence(tileA, tileB))
         })
-
 
         uselessTiles.forEach(tile => {
             if (!hasPair) {

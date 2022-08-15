@@ -1,7 +1,7 @@
-import {Tile} from "../../core/game-types/Tile";
-import {excludeTiles, hasIdenticalTiles, hasTiles, isTheSameTile} from "../tiles/tileContains";
-import {SuitType} from "../../core/game-types/SuitType";
-import {sortTiles} from "../game/sortTiles";
+import { Tile } from '../../core/game-types/Tile'
+import { excludeTiles, hasIdenticalTiles, hasTiles, isTheSameTile } from '../tiles/tileContains'
+import { SuitType } from '../../core/game-types/SuitType'
+import { sortTiles } from '../game/sortTiles'
 
 export type MeldTileGroup = [Tile, Tile, Tile]
 export type TwoTilesGroup = [Tile, Tile] // pair or 2/3 sequential meld tiles
@@ -33,7 +33,7 @@ export function splitHand(all: Tile[]): MeldVariant[] {
     const allVariants = splitTiles(all, getAllMeldsForTile)
 
     const result: MeldVariant[] = []
-    allVariants.forEach((groupingVariant) => {
+    allVariants.forEach(groupingVariant => {
         const melds: MeldTileGroup[] = []
         const remainingTiles: Tile[] = []
 
@@ -46,7 +46,11 @@ export function splitHand(all: Tile[]): MeldVariant[] {
         })
 
         // we might have duplicates even for simple structures and it's easier to check it here than in splitTiles
-        const alreadyAdded = result.some(x => handInfoToString(x.melds, x.remainingTiles) === handInfoToString(melds, remainingTiles))
+        const alreadyAdded = result.some(
+            x =>
+                handInfoToString(x.melds, x.remainingTiles) ===
+                handInfoToString(melds, remainingTiles)
+        )
 
         if (!alreadyAdded) {
             result.push({
@@ -66,7 +70,7 @@ export function splitToGroups(allTiles: Tile[]): GroupingVariant[] {
     const allVariants = splitTiles(allTiles, getAllGroupsForTile)
 
     const result: GroupingVariant[] = []
-    allVariants.map((groupingVariant) => {
+    allVariants.map(groupingVariant => {
         const pairs: TwoTilesGroup[] = []
         const sequences: TwoTilesGroup[] = []
         const uselessTiles: Tile[] = []
@@ -84,8 +88,10 @@ export function splitToGroups(allTiles: Tile[]): GroupingVariant[] {
         })
 
         // we might have duplicates even for simple structures and it's easier to check it here than in splitTiles
-        const alreadyAdded = result.some(x =>
-            handInfoToString([...x.pairs, ...x.sequences], x.uselessTiles) === handInfoToString([...pairs, ...sequences], uselessTiles)
+        const alreadyAdded = result.some(
+            x =>
+                handInfoToString([...x.pairs, ...x.sequences], x.uselessTiles) ===
+                handInfoToString([...pairs, ...sequences], uselessTiles)
         )
 
         if (!alreadyAdded) {
@@ -110,7 +116,11 @@ function tileToString(tile: Tile, printType: boolean): string {
     return tile.value + typeStr
 }
 
-export function handInfoToString(groups: MeldTileGroup[] | TwoTilesGroup[], remainingTiles: Tile[], printType: boolean = false): string {
+export function handInfoToString(
+    groups: MeldTileGroup[] | TwoTilesGroup[],
+    remainingTiles: Tile[],
+    printType: boolean = false
+): string {
     const groupsStr = groups.map(x => groupToString(x, printType))
     const separatedTiles = sortTiles(remainingTiles).map(x => tileToString(x, printType))
 
@@ -195,7 +205,10 @@ function getAllMeldsForTile(tile: Tile, remainingTiles: Tile[]): MeldTileGroup[]
     return melds
 }
 
-function splitTiles<T extends Tile[]>(allTiles: Tile[], getTileGroups: (tile: Tile, remainingTiles: Tile[]) => T[]): T[][] {
+function splitTiles<T extends Tile[]>(
+    allTiles: Tile[],
+    getTileGroups: (tile: Tile, remainingTiles: Tile[]) => T[]
+): T[][] {
     if (allTiles.length === 0) {
         return []
     }
@@ -237,7 +250,6 @@ function splitTiles<T extends Tile[]>(allTiles: Tile[], getTileGroups: (tile: Ti
 
     return variants
 }
-
 
 function getAllGroupsForTile(tile: Tile, remainingTiles: Tile[]): TwoTilesGroup[] {
     const groups: TwoTilesGroup[] = []

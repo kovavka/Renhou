@@ -1,5 +1,5 @@
-import {IAppService} from "./IAppService";
-import {AppServiceImpl} from "./AppServiceImpl";
+import { IAppService } from './IAppService'
+import { AppServiceImpl } from './AppServiceImpl'
 
 export class AppService {
     private static _instance: IAppService | undefined

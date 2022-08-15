@@ -1,10 +1,10 @@
-import {IBotPlayer} from "./IBotPlayer";
-import {Tile} from "../../../core/game-types/Tile";
-import {DrawTile} from "../../../core/game-types/DrawTile";
-import {getShantenInfo, ShantenInfo} from "../../../utils/hand/getShantenInfo";
-import {Hand} from "../../../core/game-types/Hand";
-import {excludeTiles, hasTiles} from "../../../utils/tiles/tileContains";
-import {SuitType} from "../../../core/game-types/SuitType";
+import { IBotPlayer } from './IBotPlayer'
+import { Tile } from '../../../core/game-types/Tile'
+import { DrawTile } from '../../../core/game-types/DrawTile'
+import { getShantenInfo, ShantenInfo } from '../../../utils/hand/getShantenInfo'
+import { Hand } from '../../../core/game-types/Hand'
+import { excludeTiles, hasTiles } from '../../../utils/tiles/tileContains'
+import { SuitType } from '../../../core/game-types/SuitType'
 
 export class EasyBotPlayer implements IBotPlayer {
     private shantenInfo: ShantenInfo[] = []
@@ -33,13 +33,12 @@ export class EasyBotPlayer implements IBotPlayer {
         // const toDiscard: Tile[] = []
 
         // we can check han and fu as well
-        for(const info of this.shantenInfo) {
+        for (const info of this.shantenInfo) {
             if (info.value > minRegularShanten) {
                 break
             }
 
-            const {improvements} = info.nextDrawInfo
-
+            const { improvements } = info.nextDrawInfo
 
             // if (info.structureType === HandStructureType.CHIITOI) {
             //     // for easy bot we won't check all hand development possibilities
@@ -82,7 +81,10 @@ export class EasyBotPlayer implements IBotPlayer {
             // }
 
             if (hasTiles(improvements, drawTile)) {
-                const find = this.findSomethingToDiscard(info.splittingInfo.remainingTiles, drawTile)
+                const find = this.findSomethingToDiscard(
+                    info.splittingInfo.remainingTiles,
+                    drawTile
+                )
                 if (find !== undefined) {
                     return find
                 }
@@ -91,15 +93,18 @@ export class EasyBotPlayer implements IBotPlayer {
             // todo canDraw and canReplace
         }
 
-        for(const info of this.shantenInfo) {
+        for (const info of this.shantenInfo) {
             if (info.value > minRegularShanten) {
                 break
             }
 
-            const {improvements, usefulTiles} = info.nextDrawInfo
+            const { improvements, usefulTiles } = info.nextDrawInfo
 
             if (hasTiles(usefulTiles, drawTile)) {
-                const find = this.findSomethingToDiscard(info.splittingInfo.remainingTiles, drawTile)
+                const find = this.findSomethingToDiscard(
+                    info.splittingInfo.remainingTiles,
+                    drawTile
+                )
                 if (find !== undefined) {
                     return find
                 }
@@ -111,13 +116,11 @@ export class EasyBotPlayer implements IBotPlayer {
         //  - it's more centered
         //  - it could help increase hand cost
 
-
-
         return undefined
     }
 
     private findSomethingToDiscard(remainingTiles: Tile[], drawTile: Tile): Tile | undefined {
-               const tilesMightDiscard = excludeTiles(remainingTiles, drawTile).find(tile => {
+        const tilesMightDiscard = excludeTiles(remainingTiles, drawTile).find(tile => {
             if (tile.type !== drawTile.type || tile.type === SuitType.JIHAI) {
                 return true
             }

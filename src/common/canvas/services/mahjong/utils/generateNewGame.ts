@@ -1,11 +1,11 @@
-import {GameState} from "../IMahjongService";
-import {generateWall} from "../../../utils/game/wallGenerator";
-import {Hand} from "../../../core/game-types/Hand";
-import {sortTiles} from "../../../utils/game/sortTiles";
-import {Side} from "../../../core/game-types/Side";
-import {DrawTile} from "../../../core/game-types/DrawTile";
-import {GameTurn} from "../../../core/game-types/GameTurn";
-import {DeadWallTile} from "../../../core/game-types/DeadWallTile";
+import { GameState } from '../IMahjongService'
+import { generateWall } from '../../../utils/game/wallGenerator'
+import { Hand } from '../../../core/game-types/Hand'
+import { sortTiles } from '../../../utils/game/sortTiles'
+import { Side } from '../../../core/game-types/Side'
+import { DrawTile } from '../../../core/game-types/DrawTile'
+import { GameTurn } from '../../../core/game-types/GameTurn'
+import { DeadWallTile } from '../../../core/game-types/DeadWallTile'
 
 export function generateNewGame(): GameState {
     const wall = generateWall()
@@ -53,11 +53,10 @@ export function generateNewGame(): GameState {
     const tilesForDeadWall = wall.splice(0, 14)
     const deadWall: DeadWallTile[] = tilesForDeadWall.map((value, index) => ({
         ...value,
-        isHidden: index !== 5
+        isHidden: index !== 5,
     }))
 
     const replacementTiles = deadWall.slice(0, 4)
-
 
     return {
         liveWall: wall,

@@ -1,6 +1,6 @@
-import {IAppService, ScreenType} from "./IAppService";
-import signals from "signals";
-import {MahjongService} from "../mahjong/MahjongService";
+import { IAppService, ScreenType } from './IAppService'
+import signals from 'signals'
+import { MahjongService } from '../mahjong/MahjongService'
 
 export class AppServiceImpl implements IAppService {
     private _currentScreen: ScreenType = ScreenType.MENU

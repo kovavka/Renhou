@@ -1,5 +1,5 @@
-import {Tile} from "./Tile";
-import {Side} from "./Side";
+import { Tile } from './Tile'
+import { Side } from './Side'
 
 export enum SetType {
     PON,
@@ -22,7 +22,6 @@ export type Chii = BaseSet & {
     fromHand: [Tile, Tile]
     type: SetType.CHII
 }
-
 
 export type Kan = BaseSet & {
     fromHand: [Tile, Tile, Tile]

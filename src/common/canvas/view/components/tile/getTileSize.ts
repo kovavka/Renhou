@@ -1,6 +1,6 @@
-import {Side} from "../../../core/game-types/Side";
-import {EdgeType} from "./EdgeType";
-import {TILE_SIDE_A, TILE_SIDE_B, TILE_SIDE_C} from "./consts";
+import { Side } from '../../../core/game-types/Side'
+import { EdgeType } from './EdgeType'
+import { TILE_SIDE_A, TILE_SIDE_B, TILE_SIDE_C } from './consts'
 
 /**
  * @return [width, height]

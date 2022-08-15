@@ -1,10 +1,14 @@
-import {Context} from "../../core/Context";
-import {Rectangle} from "../../core/Rectangle";
-import {Side} from "../../core/game-types/Side";
+import { Context } from '../../core/Context'
+import { Rectangle } from '../../core/Rectangle'
+import { Side } from '../../core/game-types/Side'
 
-
-export function drawRotatedObject(context: Context, bounds: Rectangle, side: Side, drawingFunc: () => void) {
-    const {x, y, width, height} = bounds
+export function drawRotatedObject(
+    context: Context,
+    bounds: Rectangle,
+    side: Side,
+    drawingFunc: () => void
+) {
+    const { x, y, width, height } = bounds
 
     let dx = 0
     let dy = 0
@@ -41,8 +45,7 @@ export function drawRotatedObject(context: Context, bounds: Rectangle, side: Sid
     }
 
     context.setTransform(1, 0, 0, 1, x + dx, y + dy)
-    context.rotate(Math.PI * degrees / 180)
-
+    context.rotate((Math.PI * degrees) / 180)
 
     drawingFunc()
     context.setTransform(1, 0, 0, 1, 0, 0)

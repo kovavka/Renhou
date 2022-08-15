@@ -1,19 +1,19 @@
-import {GameState, IMahjongService} from "./IMahjongService";
-import {Hand} from "../../core/game-types/Hand";
-import {DeadWallTile} from "../../core/game-types/DeadWallTile";
-import {generateWall} from "../../utils/game/wallGenerator";
-import {Side} from "../../core/game-types/Side";
-import {GameTurn} from "../../core/game-types/GameTurn";
-import {DrawTile} from "../../core/game-types/DrawTile";
-import {sortTiles} from "../../utils/game/sortTiles";
-import {getNextSide} from "../../utils/game/prevNextSide";
-import signals from "signals";
-import {Tile} from "../../core/game-types/Tile";
-import {DiscardTile} from "../../core/game-types/Discard";
-import {generateNewGame} from "./utils/generateNewGame";
-import {IBotPlayer} from "./bot-players/IBotPlayer";
-import {EasyBotPlayer} from "./bot-players/EasyBotPlayer";
-import {excludeTiles} from "../../utils/tiles/tileContains";
+import { GameState, IMahjongService } from './IMahjongService'
+import { Hand } from '../../core/game-types/Hand'
+import { DeadWallTile } from '../../core/game-types/DeadWallTile'
+import { generateWall } from '../../utils/game/wallGenerator'
+import { Side } from '../../core/game-types/Side'
+import { GameTurn } from '../../core/game-types/GameTurn'
+import { DrawTile } from '../../core/game-types/DrawTile'
+import { sortTiles } from '../../utils/game/sortTiles'
+import { getNextSide } from '../../utils/game/prevNextSide'
+import signals from 'signals'
+import { Tile } from '../../core/game-types/Tile'
+import { DiscardTile } from '../../core/game-types/Discard'
+import { generateNewGame } from './utils/generateNewGame'
+import { IBotPlayer } from './bot-players/IBotPlayer'
+import { EasyBotPlayer } from './bot-players/EasyBotPlayer'
+import { excludeTiles } from '../../utils/tiles/tileContains'
 
 const BOT_THINKING_TIMEOUT = 1000
 
@@ -22,8 +22,7 @@ export class MahjongServiceImpl implements IMahjongService {
 
     stateChanged: signals.Signal<GameState> = new signals.Signal()
 
-
-    private botPlayers: {[side in Side]: IBotPlayer | undefined} = {
+    private botPlayers: { [side in Side]: IBotPlayer | undefined } = {
         [Side.TOP]: new EasyBotPlayer(),
         [Side.LEFT]: new EasyBotPlayer(),
         [Side.RIGHT]: new EasyBotPlayer(),
@@ -39,17 +38,18 @@ export class MahjongServiceImpl implements IMahjongService {
 
         this.updateState(newState)
 
-
         this.tryRunBotTurn(newState)
     }
 
     handTileClick(tile: Tile): void {
-        const {gameState} = this
+        const { gameState } = this
         if (gameState === undefined) {
             return
         }
 
-        const {currentTurn: {side}} = gameState
+        const {
+            currentTurn: { side },
+        } = gameState
 
         if (side !== Side.BOTTOM) {
             // we can highlight tile here
@@ -61,13 +61,13 @@ export class MahjongServiceImpl implements IMahjongService {
     }
 
     drawTileClick(): void {
-        const {gameState} = this
+        const { gameState } = this
         if (gameState === undefined) {
             return
         }
 
-        const {currentTurn} = gameState
-        const {side} = currentTurn
+        const { currentTurn } = gameState
+        const { side } = currentTurn
 
         if (side !== Side.BOTTOM) {
             // we can highlight tile here
@@ -95,7 +95,7 @@ export class MahjongServiceImpl implements IMahjongService {
     }
 
     private moveTurnToNext(gameState: GameState): GameState {
-        const {side, riichiAttempt, discardTile} = gameState.currentTurn
+        const { side, riichiAttempt, discardTile } = gameState.currentTurn
         const sideDiscard = gameState.discards[side]
 
         return {
@@ -105,12 +105,9 @@ export class MahjongServiceImpl implements IMahjongService {
                 ...gameState.discards,
                 [side]: {
                     ...sideDiscard,
-                    tiles: [
-                        ...sideDiscard.tiles,
-                        discardTile,
-                    ],
+                    tiles: [...sideDiscard.tiles, discardTile],
                     riichiTile: sideDiscard.riichiTile || riichiAttempt,
-                }
+                },
             },
             currentTurn: {
                 side: getNextSide(side),
@@ -120,19 +117,20 @@ export class MahjongServiceImpl implements IMahjongService {
                     ...gameState.liveWall[0],
                     fromDeadWall: false,
                 },
-            }
+            },
         }
     }
 
     private tryRunBotTurn(gameState: GameState) {
-        const {currentTurn} = gameState
-        const {side, drawTile} = currentTurn
+        const { currentTurn } = gameState
+        const { side, drawTile } = currentTurn
         const botPlayer = this.botPlayers[side]
         if (botPlayer !== undefined) {
             const tileToDiscard = botPlayer.chooseTile(drawTile)
-            const newState = tileToDiscard === undefined
-            ? this.discardDrawTile(gameState)
-            : this.discardTileFromHand(gameState, tileToDiscard)
+            const newState =
+                tileToDiscard === undefined
+                    ? this.discardDrawTile(gameState)
+                    : this.discardTileFromHand(gameState, tileToDiscard)
 
             setTimeout(() => {
                 this.finishTurn(newState)
@@ -147,8 +145,8 @@ export class MahjongServiceImpl implements IMahjongService {
     }
 
     private discardTileFromHand(gameState: GameState, tile: Tile): GameState {
-        const {currentTurn, hands} = gameState
-        const {side, drawTile} = currentTurn
+        const { currentTurn, hands } = gameState
+        const { side, drawTile } = currentTurn
 
         const currentHand = hands[side]
 
@@ -179,15 +177,14 @@ export class MahjongServiceImpl implements IMahjongService {
                 discardTile: {
                     ...tile,
                     justDrawn: false,
-                }
-
-            }
+                },
+            },
         }
     }
 
     private discardDrawTile(gameState: GameState): GameState {
-        const {currentTurn} = gameState
-        const {drawTile} = currentTurn
+        const { currentTurn } = gameState
+        const { drawTile } = currentTurn
 
         return {
             ...gameState,
@@ -197,10 +194,8 @@ export class MahjongServiceImpl implements IMahjongService {
                     type: drawTile.type,
                     value: drawTile.value,
                     justDrawn: false,
-                }
-
-            }
+                },
+            },
         }
     }
-
 }

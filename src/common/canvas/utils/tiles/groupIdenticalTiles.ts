@@ -1,8 +1,8 @@
-import {Tile} from "../../core/game-types/Tile";
-import {isTheSameTile} from "./tileContains";
+import { Tile } from '../../core/game-types/Tile'
+import { isTheSameTile } from './tileContains'
 
-export function groupIdenticalTiles(tiles: Tile[]): {tile: Tile, count: number}[] {
-    return tiles.reduce<{ tile: Tile, count: number }[]>((acc, tile) => {
+export function groupIdenticalTiles(tiles: Tile[]): { tile: Tile; count: number }[] {
+    return tiles.reduce<{ tile: Tile; count: number }[]>((acc, tile) => {
         const element = acc.find(x => isTheSameTile(x.tile, tile))
         if (element !== undefined) {
             const index = acc.indexOf(element)

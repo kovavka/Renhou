@@ -1,6 +1,6 @@
-import {getTilesFromString} from "./testUtils";
-import {SuitType} from "../../../core/game-types/SuitType";
-import {getChiitoiInfo} from "../getChiitoiInfo";
+import { getTilesFromString } from './testUtils'
+import { SuitType } from '../../../core/game-types/SuitType'
+import { getChiitoiInfo } from '../getChiitoiInfo'
 
 describe('getChiitoiInfo', () => {
     describe('Tempai', () => {
@@ -14,14 +14,14 @@ describe('getChiitoiInfo', () => {
 
             expect(info.shanten).toBe(0)
             expect(info.groups).toEqual([
-                {type: SuitType.MANZU, value: 1},
-                {type: SuitType.MANZU, value: 9},
-                {type: SuitType.PINZU, value: 1},
-                {type: SuitType.PINZU, value: 9},
-                {type: SuitType.SOUZU, value: 1},
-                {type: SuitType.SOUZU, value: 9},
+                { type: SuitType.MANZU, value: 1 },
+                { type: SuitType.MANZU, value: 9 },
+                { type: SuitType.PINZU, value: 1 },
+                { type: SuitType.PINZU, value: 9 },
+                { type: SuitType.SOUZU, value: 1 },
+                { type: SuitType.SOUZU, value: 9 },
             ])
-            expect(info.singleTiles).toEqual([{type: SuitType.JIHAI, value: 5}])
+            expect(info.singleTiles).toEqual([{ type: SuitType.JIHAI, value: 5 }])
             expect(info.tilesToDiscard).toEqual([])
         })
     })
@@ -38,16 +38,16 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(1)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
-                    {type: SuitType.JIHAI, value: 7},
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
+                    { type: SuitType.JIHAI, value: 7 },
                 ])
                 expect(info.tilesToDiscard).toEqual([])
             })
@@ -62,17 +62,17 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(2)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 9},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 9 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.SOUZU, value: 1},
-                    {type: SuitType.SOUZU, value: 9},
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
-                    {type: SuitType.JIHAI, value: 7},
+                    { type: SuitType.SOUZU, value: 1 },
+                    { type: SuitType.SOUZU, value: 9 },
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
+                    { type: SuitType.JIHAI, value: 7 },
                 ])
                 expect(info.tilesToDiscard).toEqual([])
             })
@@ -87,18 +87,18 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(3)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 1},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.PINZU, value: 8},
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
-                    {type: SuitType.SOUZU, value: 9},
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
-                    {type: SuitType.JIHAI, value: 7},
+                    { type: SuitType.PINZU, value: 8 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
+                    { type: SuitType.SOUZU, value: 9 },
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
+                    { type: SuitType.JIHAI, value: 7 },
                 ])
                 expect(info.tilesToDiscard).toEqual([])
             })
@@ -115,15 +115,15 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(1)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
-                    {type: SuitType.SOUZU, value: 9},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
+                    { type: SuitType.SOUZU, value: 9 },
                 ])
                 expect(info.singleTiles).toEqual([])
-                expect(info.tilesToDiscard).toEqual([{type: SuitType.SOUZU, value: 9}])
+                expect(info.tilesToDiscard).toEqual([{ type: SuitType.SOUZU, value: 9 }])
             })
 
             it('Should be 1 shanten and 1 tiles to discard for 4*2t + 1*3t + 2*1t', () => {
@@ -136,17 +136,17 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(1)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
                 ])
-                expect(info.tilesToDiscard).toEqual([{type: SuitType.SOUZU, value: 1}])
+                expect(info.tilesToDiscard).toEqual([{ type: SuitType.SOUZU, value: 1 }])
             })
 
             it('Should be 2 shanten and 1 tiles to discard for 3*2t + 1*3t + 4*1t', () => {
@@ -159,18 +159,18 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(2)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 3},
-                    {type: SuitType.JIHAI, value: 4},
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
+                    { type: SuitType.JIHAI, value: 3 },
+                    { type: SuitType.JIHAI, value: 4 },
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
                 ])
-                expect(info.tilesToDiscard).toEqual([{type: SuitType.SOUZU, value: 1}])
+                expect(info.tilesToDiscard).toEqual([{ type: SuitType.SOUZU, value: 1 }])
             })
 
             it('Should be 2 shanten and 2 tiles to discard for 3*2t + 2*3t + 1*1t', () => {
@@ -183,18 +183,16 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(2)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
-                expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                ])
+                expect(info.singleTiles).toEqual([{ type: SuitType.JIHAI, value: 5 }])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
             })
 
@@ -208,19 +206,19 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(2)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 4},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 4 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
-                    {type: SuitType.JIHAI, value: 7},
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
+                    { type: SuitType.JIHAI, value: 7 },
                 ])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 4},
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 4 },
                 ])
             })
 
@@ -234,17 +232,17 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(3)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
                 ])
                 expect(info.singleTiles).toEqual([])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
                 ])
             })
 
@@ -258,19 +256,19 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(3)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
                 ])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
             })
 
@@ -284,19 +282,17 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(4)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
-                expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                ])
+                expect(info.singleTiles).toEqual([{ type: SuitType.JIHAI, value: 5 }])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
             })
         })
@@ -312,14 +308,14 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(2)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
                 ])
-                expect(info.singleTiles).toEqual([{type: SuitType.SOUZU, value: 9}])
-                expect(info.tilesToDiscard).toEqual([{type: SuitType.SOUZU, value: 1}])
+                expect(info.singleTiles).toEqual([{ type: SuitType.SOUZU, value: 9 }])
+                expect(info.tilesToDiscard).toEqual([{ type: SuitType.SOUZU, value: 1 }])
             })
 
             it('Should be 2 shanten and 1 tile to discard for 3*2t + 1*4t + 3*1t', () => {
@@ -332,17 +328,17 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(2)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.PINZU, value: 1},
-                    {type: SuitType.PINZU, value: 9},
-                    {type: SuitType.SOUZU, value: 1},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 1 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.SOUZU, value: 9},
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
+                    { type: SuitType.SOUZU, value: 9 },
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
                 ])
-                expect(info.tilesToDiscard).toEqual([{type: SuitType.SOUZU, value: 1}])
+                expect(info.tilesToDiscard).toEqual([{ type: SuitType.SOUZU, value: 1 }])
             })
 
             it('Should be 4 shanten and 1 tiles to discard for 2*2t + 2*4t + 1*1t', () => {
@@ -355,17 +351,15 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(4)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
-                expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                ])
+                expect(info.singleTiles).toEqual([{ type: SuitType.JIHAI, value: 5 }])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
             })
 
@@ -379,18 +373,18 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(4)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
-                    {type: SuitType.JIHAI, value: 7},
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
+                    { type: SuitType.JIHAI, value: 7 },
                 ])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
             })
         })
@@ -406,18 +400,18 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(3)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
                 ])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
             })
 
@@ -431,18 +425,16 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(4)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
-                expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                ])
+                expect(info.singleTiles).toEqual([{ type: SuitType.JIHAI, value: 5 }])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.MANZU, value: 9},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
             })
 
@@ -456,19 +448,19 @@ describe('getChiitoiInfo', () => {
 
                 expect(info.shanten).toBe(4)
                 expect(info.groups).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
                 expect(info.singleTiles).toEqual([
-                    {type: SuitType.JIHAI, value: 5},
-                    {type: SuitType.JIHAI, value: 6},
-                    {type: SuitType.JIHAI, value: 7},
+                    { type: SuitType.JIHAI, value: 5 },
+                    { type: SuitType.JIHAI, value: 6 },
+                    { type: SuitType.JIHAI, value: 7 },
                 ])
                 expect(info.tilesToDiscard).toEqual([
-                    {type: SuitType.MANZU, value: 1},
-                    {type: SuitType.PINZU, value: 4},
-                    {type: SuitType.SOUZU, value: 5},
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.SOUZU, value: 5 },
                 ])
             })
         })

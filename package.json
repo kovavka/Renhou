@@ -10,6 +10,7 @@
     "@types/react": "^18.0.0",
     "@types/signals": "^1.0.1",
     "jest": "^28.1.3",
+    "prettier": "^2.7.1",
     "react": "^18.2.0",
     "signals": "^1.0.0",
     "ts-jest": "^28.0.7",

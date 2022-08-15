@@ -1,6 +1,6 @@
-import {Tile} from "../../../core/game-types/Tile";
-import {DrawTile} from "../../../core/game-types/DrawTile";
-import {Hand} from "../../../core/game-types/Hand";
+import { Tile } from '../../../core/game-types/Tile'
+import { DrawTile } from '../../../core/game-types/DrawTile'
+import { Hand } from '../../../core/game-types/Hand'
 
 export interface IBotPlayer {
     setHand(hand: Hand): void
