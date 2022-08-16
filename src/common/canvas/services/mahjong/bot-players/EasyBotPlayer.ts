@@ -27,6 +27,8 @@ export class EasyBotPlayer implements IBotPlayer {
         //     return undefined
         // }
 
+        // todo chiitoi and kokushi muso
+
         const minShanten = this.shantenInfo[0].value
 
         if (this.shantenInfo[0].value === 0) {

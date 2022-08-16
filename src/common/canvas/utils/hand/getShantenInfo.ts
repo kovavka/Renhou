@@ -3,6 +3,7 @@ import { getBaseShantenCount } from './getBaseShantenCount'
 import { GroupingVariant, MeldVariant, splitToMelds, splitToGroups } from './splitHand'
 import { getClosestTiles } from './getClosestTiles'
 import { getTilesToCompleteSequence } from './getTilesToCompleteSequence'
+import { getUniqueTiles } from '../tiles/tileContains'
 
 // todo calculate most useless tile in hand by hand + draw tile
 
@@ -57,7 +58,7 @@ export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
 }
 
 function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenInfo {
-    const { melds, remainingTiles } = info
+    const { sequences, triplets, remainingTiles } = info
 
     if (allTiles.length === 1) {
         return {
@@ -84,6 +85,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
     const tilesToImprove: Tile[] = []
 
     let minShantenValue = 6
+    const meldsCount = sequences.length + triplets.length
     const groupInfos: GroupingInfo[] = []
 
     groupingVariants.forEach(variant => {
@@ -91,12 +93,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
         const hasPair = pairs.length > 0
         const groupsCount = sequences.length + pairs.length
 
-        const shantenValue = getBaseShantenCount(
-            allTiles.length,
-            melds.length,
-            groupsCount,
-            hasPair
-        )
+        const shantenValue = getBaseShantenCount(allTiles.length, meldsCount, groupsCount, hasPair)
         minShantenValue = Math.min(shantenValue, minShantenValue)
 
         // we don't have enough groups when shanten >= groups length,
@@ -150,10 +147,18 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
             }
         })
 
+        if (uselessTiles.length === 1 && shantenValue === 0 && triplets.length !== 0) {
+            // when we have structure like 3334, 3335, etc.
+            // we have not only tanki wait for 3 or 4, but also pair 33 + waits for 34 or 35
+            triplets.forEach(meld => {
+                tilesToImprove.push(...getTilesToCompleteSequence(meld[0], uselessTiles[0]))
+            })
+        }
+
         groupInfos.push({
             shanten: shantenValue,
             splittingInfo: variant,
-            waits: tilesToImprove,
+            waits: getUniqueTiles(tilesToImprove),
             canDiscardPair,
             canDiscardGroup,
         })
