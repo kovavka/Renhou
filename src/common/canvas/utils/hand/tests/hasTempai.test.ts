@@ -121,6 +121,11 @@ describe('hasTempai', () => {
     })
 
     describe('4 tiles', () => {
+        it('Tempai when there are sequence of 4 tiles', () => {
+            const tiles = getTilesFromString('1234m')
+            expect(hasTempai(tiles)).toBe(true)
+        })
+
         it('Tempai when there are 1 meld and 1 tile', () => {
             const tiles = getTilesFromString('123m1z')
             expect(hasTempai(tiles)).toBe(true)

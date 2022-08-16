@@ -96,7 +96,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
         // so it order to reach tempai we need to get 1+ groups
         // e.g. [12 59] need one 1 more groups
         // [23 56 89 2] don't need any more groups
-        const needToGetMoreGroups = shantenValue !== 0 && groupsCount <= minShantenValue
+        const needToGetMoreGroups = shantenValue !== 0 && groupsCount < minShantenValue
 
         // we have too many groups and we have to discard one of them to reach tempai
         // BUT we shouldn't discard pair if it's the only one
@@ -113,6 +113,15 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
         // when we have only sequence groups we could make a pair from one of them
         //  e.g. 13 45 -> we need a pair for one of these tiles
         const shouldMakePairFromSeqMeld = !hasPair && uselessTiles.length === 0
+
+        // when we have structure like 3334, 3335, etc.
+        // we have not only tanki wait for 3 or 4, but also pair 33 + waits for 34 or 35.
+        // it will be an iprovement when we have tempai
+        // or when we don't have a pair with just enough number of sequental groups
+        const canUnionTripletsWithSeparatedTile =
+            uselessTiles.length !== 0 &&
+            triplets.length !== 0 &&
+            (shantenValue === 0 || sequences.length === minShantenValue)
 
         pairs.forEach(pair => {
             if (canUpgradePairToMeld) {
@@ -141,15 +150,13 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
                 tilesToImprove.push(tile)
                 tilesToImprove.push(...getClosestTiles(tile))
             }
-        })
 
-        if (uselessTiles.length === 1 && shantenValue === 0 && triplets.length !== 0) {
-            // when we have structure like 3334, 3335, etc.
-            // we have not only tanki wait for 3 or 4, but also pair 33 + waits for 34 or 35
-            triplets.forEach(meld => {
-                tilesToImprove.push(...getTilesToCompleteSequence(meld[0], uselessTiles[0]))
-            })
-        }
+            if (canUnionTripletsWithSeparatedTile) {
+                triplets.forEach(meld => {
+                    tilesToImprove.push(...getTilesToCompleteSequence(meld[0], tile))
+                })
+            }
+        })
 
         groupInfos.push({
             shanten: shantenValue,

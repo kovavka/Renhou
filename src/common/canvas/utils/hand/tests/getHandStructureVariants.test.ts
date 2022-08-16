@@ -6,6 +6,9 @@ import { SuitType } from '../../../core/game-types/SuitType'
 import { Tile } from '../../../core/game-types/Tile'
 
 describe('getHandStructureVariants', () => {
+    // todo add test for useful tiles (and maybe check it in smart bot):
+    //  we can replace 1235 to 1234 or 2345 without shanten changing, but with imrpoving ukeire
+
     describe('waits', () => {
         function getAllUniqueWaits(handVariants: HandStructureInfo[], shantenValue: number) {
             const allWaits = handVariants.reduce<Tile[]>((acc, info) => {
@@ -22,161 +25,257 @@ describe('getHandStructureVariants', () => {
 
             return sortTiles(getUniqueTiles(allWaits))
         }
+        describe('structure like 3334, 3335, etc.', () => {
+            it('tempai with 3 identical + the next one', () => {
+                const tiles = getTilesFromString('1236667m789p123s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('1 shanten', () => {
-            // todo add test for useful tiles (and maybe check it in smart bot):
-            //  we can replace 1235 to 1234 or 2345 without shanten changing, but with imrpoving ukeire
-            const tiles = getTilesFromString('1236667m78p1235s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(0)
 
-            expect(handVariants.length).toBe(1)
-            expect(handVariants[0].minShanten).toBe(1)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 1)
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 5 },
+                    { type: SuitType.MANZU, value: 7 },
+                    { type: SuitType.MANZU, value: 8 },
+                ])
+            })
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 5 },
-                { type: SuitType.MANZU, value: 6 },
-                { type: SuitType.MANZU, value: 7 },
-                { type: SuitType.MANZU, value: 8 },
-                { type: SuitType.MANZU, value: 9 },
-                { type: SuitType.PINZU, value: 6 },
-                { type: SuitType.PINZU, value: 9 },
-                { type: SuitType.SOUZU, value: 3 },
-                { type: SuitType.SOUZU, value: 4 },
-                { type: SuitType.SOUZU, value: 5 },
-                { type: SuitType.SOUZU, value: 6 },
-                { type: SuitType.SOUZU, value: 7 },
-            ])
-        })
+            it('tempai with 3 identical + [tile + 2]', () => {
+                const tiles = getTilesFromString('1236668m789p123s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('tempai with 3 identical + the next one', () => {
-            const tiles = getTilesFromString('1236667m789p123s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(0)
 
-            expect(handVariants.length).toBe(1)
-            expect(handVariants[0].minShanten).toBe(0)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 0)
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 7 },
+                    { type: SuitType.MANZU, value: 8 },
+                ])
+            })
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 5 },
-                { type: SuitType.MANZU, value: 7 },
-                { type: SuitType.MANZU, value: 8 },
-            ])
-        })
+            it('tempai with 3 identical + the previous one', () => {
+                const tiles = getTilesFromString('1235666m789p123s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('tempai with 3 identical + [tile + 2]', () => {
-            const tiles = getTilesFromString('1236668m789p123s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(0)
 
-            expect(handVariants.length).toBe(1)
-            expect(handVariants[0].minShanten).toBe(0)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 0)
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 5 },
+                    { type: SuitType.MANZU, value: 7 },
+                ])
+            })
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 7 },
-                { type: SuitType.MANZU, value: 8 },
-            ])
-        })
+            it('tempai with 3 identical + [tile - 2]', () => {
+                const tiles = getTilesFromString('1234666m789p123s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('tempai with 3 identical + the previous one', () => {
-            const tiles = getTilesFromString('1235666m789p123s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(2)
+                expect(handVariants[0].minShanten).toBe(0)
 
-            expect(handVariants.length).toBe(1)
-            expect(handVariants[0].minShanten).toBe(0)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 0)
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 5 },
+                ])
+            })
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 4 },
-                { type: SuitType.MANZU, value: 5 },
-                { type: SuitType.MANZU, value: 7 },
-            ])
-        })
+            it('tempai with structure like 3334555', () => {
+                const tiles = getTilesFromString('3334555m789p123s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('tempai with 3 identical + [tile - 2]', () => {
-            const tiles = getTilesFromString('1234666m789p123s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(2)
+                expect(handVariants[0].minShanten).toBe(0)
 
-            expect(handVariants.length).toBe(2)
-            expect(handVariants[0].minShanten).toBe(0)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 0)
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 2 },
+                    { type: SuitType.MANZU, value: 3 },
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 5 },
+                    { type: SuitType.MANZU, value: 6 },
+                ])
+            })
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 1 },
-                { type: SuitType.MANZU, value: 4 },
-                { type: SuitType.MANZU, value: 5 },
-            ])
-        })
+            it('tempai with structure like 3334666', () => {
+                const tiles = getTilesFromString('3334666m789p123s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('tempai with structure like 3334555', () => {
-            const tiles = getTilesFromString('3334555m789p123s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(0)
 
-            expect(handVariants.length).toBe(2)
-            expect(handVariants[0].minShanten).toBe(0)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 0)
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 2 },
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 5 },
+                ])
+            })
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 2 },
-                { type: SuitType.MANZU, value: 3 },
-                { type: SuitType.MANZU, value: 4 },
-                { type: SuitType.MANZU, value: 5 },
-                { type: SuitType.MANZU, value: 6 },
-            ])
-        })
+            it('tempai with structure like 3335666', () => {
+                const tiles = getTilesFromString('3335666m789p123s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('tempai with structure like 3334666', () => {
-            const tiles = getTilesFromString('3334666m789p123s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(0)
 
-            expect(handVariants.length).toBe(1)
-            expect(handVariants[0].minShanten).toBe(0)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 0)
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 5 },
+                    { type: SuitType.MANZU, value: 7 },
+                ])
+            })
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 2 },
-                { type: SuitType.MANZU, value: 4 },
-                { type: SuitType.MANZU, value: 5 },
-            ])
-        })
+            it('tempai with structure like 3335777', () => {
+                const tiles = getTilesFromString('3335777m789p123s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('tempai with structure like 3335666', () => {
-            const tiles = getTilesFromString('3335666m789p123s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(0)
 
-            expect(handVariants.length).toBe(1)
-            expect(handVariants[0].minShanten).toBe(0)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 0)
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 5 },
+                    { type: SuitType.MANZU, value: 6 },
+                ])
+            })
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 4 },
-                { type: SuitType.MANZU, value: 5 },
-                { type: SuitType.MANZU, value: 7 },
-            ])
-        })
+            it('3 shanten with structure like 6667 and 4 sequential groups', () => {
+                const tiles = getTilesFromString('1256m126667p125s')
+                const handVariants = getHandStructureVariants(tiles)
 
-        it('tempai with structure like 3335777', () => {
-            const tiles = getTilesFromString('3335777m789p123s')
-            const handVariants = getHandStructureVariants(tiles)
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(3)
 
-            expect(handVariants.length).toBe(1)
-            expect(handVariants[0].minShanten).toBe(0)
+                const uniqueWaits = getAllUniqueWaits(handVariants, 3)
 
-            const uniqueWaits = getAllUniqueWaits(handVariants, 0)
+                // pin 5 and 8 won't be improvements, because we have too much groups,
+                // and it will be 1 meld (678), pair (66) + 4 other groups which is still 3 shanten
 
-            expect(uniqueWaits).toEqual([
-                { type: SuitType.MANZU, value: 4 },
-                { type: SuitType.MANZU, value: 5 },
-                { type: SuitType.MANZU, value: 6 },
-            ])
+                // todo add tests for useful tiles for such hand
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 3 },
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 7 },
+                    { type: SuitType.PINZU, value: 3 },
+                    { type: SuitType.PINZU, value: 7 },
+                    { type: SuitType.SOUZU, value: 3 },
+                    { type: SuitType.SOUZU, value: 5 },
+                ])
+            })
+
+            it('2 shanten with structure like 6667 + 1 meld and 3 sequential groups', () => {
+                const tiles = getTilesFromString('1256m126667p123s')
+                const handVariants = getHandStructureVariants(tiles)
+
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(2)
+
+                const uniqueWaits = getAllUniqueWaits(handVariants, 2)
+
+                // pin 5 and 8 won't be improvements, because we have too much groups
+
+                // todo add tests for useful tiles for such hand
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 3 },
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 7 },
+                    { type: SuitType.PINZU, value: 3 },
+                    { type: SuitType.PINZU, value: 7 },
+                ])
+            })
+
+            it('2 shanten with structure like 6667 + 1 meld and 2 sequential groups', () => {
+                const tiles = getTilesFromString('1259m126667p123s')
+                const handVariants = getHandStructureVariants(tiles)
+
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(2)
+
+                const uniqueWaits = getAllUniqueWaits(handVariants, 2)
+
+                // pin 5 and 8 will be improvements, because we have just enough groups,
+                // but we don't have a pair, and 66 + 678 will give us a pair
+
+                // todo add tests for useful tiles for such hand
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 3 },
+                    { type: SuitType.MANZU, value: 5 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 3 },
+                    { type: SuitType.PINZU, value: 5 },
+                    { type: SuitType.PINZU, value: 7 },
+                    { type: SuitType.PINZU, value: 8 },
+                ])
+            })
+
+            it('3 shanten with structure like 6667 + 1 meld and 1 sequential groups', () => {
+                const tiles = getTilesFromString('159m126667p1239s')
+                const handVariants = getHandStructureVariants(tiles)
+
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(3)
+
+                const uniqueWaits = getAllUniqueWaits(handVariants, 3)
+
+                // pin 5 and 8 will be improvements, because we don't have just enough groups
+
+                // todo add tests for useful tiles for such hand
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 1 },
+                    { type: SuitType.MANZU, value: 2 },
+                    { type: SuitType.MANZU, value: 3 },
+                    { type: SuitType.MANZU, value: 4 },
+                    { type: SuitType.MANZU, value: 5 },
+                    { type: SuitType.MANZU, value: 6 },
+                    { type: SuitType.MANZU, value: 7 },
+                    { type: SuitType.MANZU, value: 8 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 3 },
+                    { type: SuitType.PINZU, value: 5 },
+                    { type: SuitType.PINZU, value: 6 },
+                    { type: SuitType.PINZU, value: 7 },
+                    { type: SuitType.PINZU, value: 8 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 7 },
+                    { type: SuitType.SOUZU, value: 8 },
+                    { type: SuitType.SOUZU, value: 9 },
+                ])
+            })
+
+            it('1 shanten with structure like 6667 + 2 meld and 1 sequential groups', () => {
+                const tiles = getTilesFromString('1236667m78p1239s')
+                const handVariants = getHandStructureVariants(tiles)
+
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(1)
+
+                const uniqueWaits = getAllUniqueWaits(handVariants, 1)
+
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 5 },
+                    { type: SuitType.MANZU, value: 7 },
+                    { type: SuitType.MANZU, value: 8 },
+                    { type: SuitType.PINZU, value: 6 },
+                    { type: SuitType.PINZU, value: 9 },
+                    { type: SuitType.SOUZU, value: 9 },
+                ])
+            })
         })
     })
 
