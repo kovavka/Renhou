@@ -15,25 +15,22 @@ export type GroupingInfo = {
     canDiscardGroup: boolean
 }
 
-// todo maybe rename
-export type ShantenInfo = {
+export type HandStructureInfo = {
     /**
      *  number of tiles needed for reaching tempai
      */
-    value: number
+    minShanten: number
 
     // todo maybe we don't need it?
     splittingInfo: MeldVariant
 
-    variants: GroupingInfo[]
+    groupingVariants: GroupingInfo[]
 }
-
-// todo maybe rename to getHandStructure
 
 /**
  * only regular structure
  */
-export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
+export function getHandStructureVariants(tiles: Tile[]): HandStructureInfo[] {
     if (
         tiles.length !== 1 &&
         tiles.length !== 4 &&
@@ -46,24 +43,23 @@ export function getShantenInfo(tiles: Tile[]): ShantenInfo[] {
 
     const handSplitVariants = splitToMelds(tiles)
 
-    const result: ShantenInfo[] = []
+    const result: HandStructureInfo[] = []
 
     handSplitVariants.forEach(info => {
         const regular = getRegularHandStructure(info, tiles)
         result.push(regular)
     })
 
-    // todo maybe remove sort?
-    return result.sort((a, b) => a.value - b.value)
+    return result.sort((a, b) => a.minShanten - b.minShanten)
 }
 
-function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenInfo {
+function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStructureInfo {
     const { sequences, triplets, remainingTiles } = info
 
     if (allTiles.length === 1) {
         return {
             splittingInfo: info,
-            variants: [
+            groupingVariants: [
                 {
                     shanten: 0,
                     splittingInfo: {
@@ -76,7 +72,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
                     canDiscardGroup: false,
                 },
             ],
-            value: 0,
+            minShanten: 0,
         }
     }
 
@@ -166,7 +162,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): ShantenIn
 
     return {
         splittingInfo: info,
-        variants: groupInfos,
-        value: minShantenValue,
+        groupingVariants: groupInfos,
+        minShanten: minShantenValue,
     }
 }

@@ -1,16 +1,16 @@
-import { getShantenInfo, ShantenInfo } from '../getShantenInfo'
+import { getHandStructureVariants, HandStructureInfo } from '../getHandStructureVariants'
 import { getUniqueTiles } from '../../tiles/tileContains'
 import { sortTiles } from '../../game/sortTiles'
 import { getTilesFromString } from './testUtils'
 import { SuitType } from '../../../core/game-types/SuitType'
 import { Tile } from '../../../core/game-types/Tile'
 
-describe('getShantenInfo', () => {
+describe('getHandStructureVariants', () => {
     describe('waits', () => {
-        function getAllUniqueWaits(handVariants: ShantenInfo[], shantenValue: number) {
+        function getAllUniqueWaits(handVariants: HandStructureInfo[], shantenValue: number) {
             const allWaits = handVariants.reduce<Tile[]>((acc, info) => {
-                if (info.value === shantenValue) {
-                    info.variants.forEach(groupingVariant => {
+                if (info.minShanten === shantenValue) {
+                    info.groupingVariants.forEach(groupingVariant => {
                         if (groupingVariant.shanten === shantenValue) {
                             acc.push(...groupingVariant.waits)
                         }
@@ -27,10 +27,10 @@ describe('getShantenInfo', () => {
             // todo add test for useful tiles (and maybe check it in smart bot):
             //  we can replace 1235 to 1234 or 2345 without shanten changing, but with imrpoving ukeire
             const tiles = getTilesFromString('1236667m78p1235s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(1)
-            expect(handVariants[0].value).toBe(1)
+            expect(handVariants[0].minShanten).toBe(1)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 1)
 
@@ -52,10 +52,10 @@ describe('getShantenInfo', () => {
 
         it('tempai with 3 identical + the next one', () => {
             const tiles = getTilesFromString('1236667m789p123s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(1)
-            expect(handVariants[0].value).toBe(0)
+            expect(handVariants[0].minShanten).toBe(0)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
@@ -68,10 +68,10 @@ describe('getShantenInfo', () => {
 
         it('tempai with 3 identical + [tile + 2]', () => {
             const tiles = getTilesFromString('1236668m789p123s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(1)
-            expect(handVariants[0].value).toBe(0)
+            expect(handVariants[0].minShanten).toBe(0)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
@@ -83,10 +83,10 @@ describe('getShantenInfo', () => {
 
         it('tempai with 3 identical + the previous one', () => {
             const tiles = getTilesFromString('1235666m789p123s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(1)
-            expect(handVariants[0].value).toBe(0)
+            expect(handVariants[0].minShanten).toBe(0)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
@@ -99,10 +99,10 @@ describe('getShantenInfo', () => {
 
         it('tempai with 3 identical + [tile - 2]', () => {
             const tiles = getTilesFromString('1234666m789p123s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(2)
-            expect(handVariants[0].value).toBe(0)
+            expect(handVariants[0].minShanten).toBe(0)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
@@ -115,10 +115,10 @@ describe('getShantenInfo', () => {
 
         it('tempai with structure like 3334555', () => {
             const tiles = getTilesFromString('3334555m789p123s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(2)
-            expect(handVariants[0].value).toBe(0)
+            expect(handVariants[0].minShanten).toBe(0)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
@@ -133,10 +133,10 @@ describe('getShantenInfo', () => {
 
         it('tempai with structure like 3334666', () => {
             const tiles = getTilesFromString('3334666m789p123s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(1)
-            expect(handVariants[0].value).toBe(0)
+            expect(handVariants[0].minShanten).toBe(0)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
@@ -149,10 +149,10 @@ describe('getShantenInfo', () => {
 
         it('tempai with structure like 3335666', () => {
             const tiles = getTilesFromString('3335666m789p123s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(1)
-            expect(handVariants[0].value).toBe(0)
+            expect(handVariants[0].minShanten).toBe(0)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 
@@ -165,10 +165,10 @@ describe('getShantenInfo', () => {
 
         it('tempai with structure like 3335777', () => {
             const tiles = getTilesFromString('3335777m789p123s')
-            const handVariants = getShantenInfo(tiles)
+            const handVariants = getHandStructureVariants(tiles)
 
             expect(handVariants.length).toBe(1)
-            expect(handVariants[0].value).toBe(0)
+            expect(handVariants[0].minShanten).toBe(0)
 
             const uniqueWaits = getAllUniqueWaits(handVariants, 0)
 

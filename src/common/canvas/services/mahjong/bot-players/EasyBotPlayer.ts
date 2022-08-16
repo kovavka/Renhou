@@ -1,7 +1,10 @@
 import { IBotPlayer } from './IBotPlayer'
 import { Tile } from '../../../core/game-types/Tile'
 import { DrawTile } from '../../../core/game-types/DrawTile'
-import { getShantenInfo, ShantenInfo } from '../../../utils/hand/getShantenInfo'
+import {
+    getHandStructureVariants,
+    HandStructureInfo,
+} from '../../../utils/hand/getHandStructureVariants'
 import { Hand } from '../../../core/game-types/Hand'
 import { excludeTiles, hasTiles, isTheSameTile } from '../../../utils/tiles/tileContains'
 import { SuitType } from '../../../core/game-types/SuitType'
@@ -14,12 +17,12 @@ import { getTilesToCompleteSequence } from '../../../utils/hand/getTilesToComple
 // although it could be useful to improve pair to sequence and discard tile from other one instead
 
 export class EasyBotPlayer implements IBotPlayer {
-    private shantenInfo: ShantenInfo[] = []
+    private shantenInfo: HandStructureInfo[] = []
     private hand: Hand | undefined
 
     setHand(hand: Hand): void {
         this.hand = hand
-        this.shantenInfo = getShantenInfo(hand.tiles)
+        this.shantenInfo = getHandStructureVariants(hand.tiles)
     }
 
     chooseTile(drawTile: DrawTile): Tile | undefined {
@@ -29,9 +32,9 @@ export class EasyBotPlayer implements IBotPlayer {
 
         // todo chiitoi and kokushi muso
 
-        const minShanten = this.shantenInfo[0].value
+        const minShanten = this.shantenInfo[0].minShanten
 
-        if (this.shantenInfo[0].value === 0) {
+        if (this.shantenInfo[0].minShanten === 0) {
             // todo call tsumo,
             //  maybe we will check if could call tsumo before choosing tile,
             //  so here it will be just draw or replacement to something better to wait
@@ -43,13 +46,13 @@ export class EasyBotPlayer implements IBotPlayer {
 
         // we can check han and fu as well (for more smart bots)
         for (const info of this.shantenInfo) {
-            const { splittingInfo, value, variants } = info
+            const { splittingInfo, minShanten, groupingVariants } = info
             const { remainingTiles } = splittingInfo
-            if (value > minShanten) {
+            if (minShanten > minShanten) {
                 break
             }
 
-            for (const groupInfo of variants) {
+            for (const groupInfo of groupingVariants) {
                 // todo make canDiscardSequence instead of canDiscardGroup
                 const {
                     shanten,
@@ -59,7 +62,7 @@ export class EasyBotPlayer implements IBotPlayer {
                     canDiscardPair,
                 } = groupInfo
                 const { pairs, sequences, uselessTiles } = groupSplittingInfo
-                if (info.value > minShanten) {
+                if (info.minShanten > minShanten) {
                     break
                 }
 
