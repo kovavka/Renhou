@@ -89,7 +89,12 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
         const hasPair = pairs.length > 0
         const groupsCount = sequences.length + pairs.length
 
-        const shantenValue = getBaseShantenCount(allTiles.length, meldsCount, groupsCount, hasPair)
+        const shantenValue = getBaseShantenCount(
+            meldsCount,
+            groupsCount,
+            uselessTiles.length,
+            hasPair
+        )
         minShantenValue = Math.min(shantenValue, minShantenValue)
 
         // we don't have enough groups when shanten >= groups length,
@@ -110,7 +115,8 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
         // e.g. 11 45 -> we can improve only with 36
         const canUpgradePairToMeld = pairs.length !== 1 || uselessTiles.length !== 0
 
-        // todo calc canUpgradePairToMeld and others using getBaseShantenCount!
+        // todo maybe calc canUpgradePairToMeld and others using getBaseShantenCount?
+        //  although it won't work for shanten > 6 like 159m159p159s1234z
 
         // when we have only sequence groups we could make a pair from one of them
         //  e.g. 13 45 -> we need a pair for one of these tiles
