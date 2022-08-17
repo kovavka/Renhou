@@ -1,5 +1,5 @@
 import { groupIdenticalTiles } from '../groupIdenticalTiles'
-import { getTilesFromString } from '../../hand/tests/testUtils'
+import { getTilesFromString } from '../../hand/getTilesFromString'
 import { SuitType } from '../../../core/game-types/SuitType'
 
 describe('groupIdenticalTiles', () => {

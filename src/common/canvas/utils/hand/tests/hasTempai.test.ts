@@ -1,6 +1,6 @@
 import { hasTempai } from '../hasTempai'
 import { SuitType } from '../../../core/game-types/SuitType'
-import { getTilesFromString } from './testUtils'
+import { getTilesFromString } from '../getTilesFromString'
 
 describe('hasTempai', () => {
     describe('Chiitoi', () => {
@@ -55,6 +55,11 @@ describe('hasTempai', () => {
 
         it('Tempai when there are 4 melds of any kind and 1 tile', () => {
             const tiles = getTilesFromString('111789m111p2229s')
+            expect(hasTempai(tiles)).toBe(true)
+        })
+
+        it('Tempai when there are 4 sequential melds + 1 tile next to one', () => {
+            const tiles = getTilesFromString('123789m123p1234s')
             expect(hasTempai(tiles)).toBe(true)
         })
 

@@ -110,6 +110,8 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
         // e.g. 11 45 -> we can improve only with 36
         const canUpgradePairToMeld = pairs.length !== 1 || uselessTiles.length !== 0
 
+        // todo calc canUpgradePairToMeld and others using getBaseShantenCount!
+
         // when we have only sequence groups we could make a pair from one of them
         //  e.g. 13 45 -> we need a pair for one of these tiles
         const shouldMakePairFromSeqMeld = !hasPair && uselessTiles.length === 0

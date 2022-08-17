@@ -1,4 +1,4 @@
-import { getTilesFromString } from './testUtils'
+import { getTilesFromString } from '../getTilesFromString'
 import { SuitType } from '../../../core/game-types/SuitType'
 import { getChiitoiInfo } from '../getChiitoiInfo'
 

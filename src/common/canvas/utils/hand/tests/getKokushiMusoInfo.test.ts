@@ -1,5 +1,5 @@
 import { getKokushiMusoInfo } from '../getKokushiMusoInfo'
-import { getTilesFromString } from './testUtils'
+import { getTilesFromString } from '../getTilesFromString'
 import { SuitType } from '../../../core/game-types/SuitType'
 import { getTerimalAndHonors } from '../getTerimalAndHonors'
 import { sortTiles } from '../../game/sortTiles'

@@ -5,7 +5,7 @@ import {
     GroupingVariant,
     splittingVariantToString,
 } from '../splitHand'
-import { getTilesFromString } from './testUtils'
+import { getTilesFromString } from '../getTilesFromString'
 
 function meldVariantsToString(variants: MeldVariant[], printType: boolean = false): string[] {
     return variants.map(x =>
