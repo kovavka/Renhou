@@ -58,7 +58,7 @@ export class EasyBotPlayer implements IBotPlayer {
                     shanten,
                     splittingInfo: groupSplittingInfo,
                     waits,
-                    canDiscardGroup,
+                    canDiscardSeq,
                     canDiscardPair,
                 } = groupInfo
                 const { pairs, sequences, uselessTiles } = groupSplittingInfo
@@ -79,7 +79,7 @@ export class EasyBotPlayer implements IBotPlayer {
                         }
                     }
 
-                    if (canDiscardGroup) {
+                    if (canDiscardSeq) {
                         const find = sequences.find(x => {
                             const [tileA, tileB] = x
                             const waits = getTilesToCompleteSequence(tileA, tileB)

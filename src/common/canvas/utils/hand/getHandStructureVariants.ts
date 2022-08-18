@@ -10,10 +10,20 @@ import { SuitType } from '../../core/game-types/SuitType'
 
 export type GroupingInfo = {
     shanten: number
+
     splittingInfo: GroupingVariant
+
     waits: Tile[]
+
+    /**
+     * hand has too much groups and more than one pair, so one of groups could be discarded
+     */
     canDiscardPair: boolean
-    canDiscardGroup: boolean
+
+    /**
+     * hand has too much groups, so one of sequences could be discarded
+     */
+    canDiscardSeq: boolean
 }
 
 export type HandStructureInfo = {
@@ -70,7 +80,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
                     },
                     waits: allTiles,
                     canDiscardPair: false,
-                    canDiscardGroup: false,
+                    canDiscardSeq: false,
                 },
             ],
             minShanten: 0,
@@ -78,8 +88,6 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
     }
 
     const groupingVariants = splitToGroups(remainingTiles)
-
-    const tilesToImprove: Tile[] = []
 
     let minShantenValue = 6
 
@@ -117,32 +125,33 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
         // BUT we shouldn't discard pair if it's the only one
         // e.g. [23 56 89 2], 3 < 2 -> can discard
         // [12 45 78 12 5 9], 4 >= 4 -> can not discard
-        const canDiscardGroup = tooMuchGroups
+        const canDiscardSeq = tooMuchGroups
         const canDiscardPair = tooMuchGroups && pairs.length > 1
+        // todo add tests for canDiscardSeq and canDiscardPair
 
         //  when we all others groups are sequences,
         //  it's impossible to improve hand with upgrading pair to pon,
         // e.g. 11 45 -> we can improve only with 36
-        const canUpgradePairToMeld = pairs.length !== 1 || uselessTiles.length !== 0
+        const canUpgradePairToMeld = !(pairs.length === 1 && groupsCount > maxMeldsLeft)
 
-        // when we have only sequence groups we could make a pair from one of them
+        // when we have too much sequence groups we could make a pair from one of them
         //  e.g. 13 45 -> we need a pair for one of these tiles
-        const shouldMakePairFromSeqMeld = !hasPair && uselessTiles.length === 0
+        const shouldMakePairFromSeqGroup = !hasPair && tooMuchGroups
 
         // when we have structure like 3334, 3335, etc.
         // we have not only tanki wait for 3 or 4, but also pair 33 + waits for 34 or 35.
         // it will be an iprovement when we have tempai
-        // or when we don't have a pair with just enough number of sequential groups
+        // or when we don't have too much groups
         const canUnionTripletsWithSeparatedTile =
-            uselessTiles.length !== 0 &&
-            triplets.length !== 0 &&
-            (shantenValue === 0 || (sequentialGroups.length === minShantenValue && !hasPair))
+            uselessTiles.length !== 0 && triplets.length !== 0 && !tooMuchGroups
 
         // when we have structure like 3567, etc.
         // we have not only tanki wait for 3, but also groups 35 + 67.
         // it will be an iprovement when we don't have enough sequential groups
         const canUnionSequenceWithSeparatedTile =
             uselessTiles.length !== 0 && sequences.length !== 0 && needToGetMoreGroups
+
+        const tilesToImprove: Tile[] = []
 
         pairs.forEach(pair => {
             if (canUpgradePairToMeld) {
@@ -152,7 +161,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
 
         sequentialGroups.forEach(sequence => {
             const [tileA, tileB] = sequence
-            if (shouldMakePairFromSeqMeld) {
+            if (shouldMakePairFromSeqGroup) {
                 tilesToImprove.push(tileA)
                 tilesToImprove.push(tileB)
             }
@@ -212,7 +221,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
             splittingInfo: variant,
             waits: getUniqueTiles(tilesToImprove),
             canDiscardPair,
-            canDiscardGroup,
+            canDiscardSeq,
         })
     })
 

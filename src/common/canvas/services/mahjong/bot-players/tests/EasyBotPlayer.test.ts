@@ -8,6 +8,8 @@ describe('EasyBotPlayer', () => {
     })
 
     describe('chooseTile', () => {
+        it('', () => {})
+
         // 9m36799p3567s123z + 4p
         /*
         describe('problem with sets - chiitoi + regular', () => {
