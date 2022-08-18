@@ -354,6 +354,48 @@ describe('getHandStructureVariants', () => {
                 ])
             })
 
+            it('not enough groups with 3567 without pair', () => {
+                const tiles = getTilesFromString('78m3567p1234z')
+                const handVariants = getHandStructureVariants(tiles)
+
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(3)
+
+                const uniqueWaits = getAllUniqueWaits(handVariants, 3)
+
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 6 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 1 },
+                    { type: SuitType.PINZU, value: 2 },
+                    { type: SuitType.PINZU, value: 3 },
+                    { type: SuitType.PINZU, value: 4 },
+                    { type: SuitType.PINZU, value: 5 },
+                    { type: SuitType.PINZU, value: 8 }, // important
+                    { type: SuitType.SOUZU, value: 1 },
+                    { type: SuitType.SOUZU, value: 2 },
+                    { type: SuitType.SOUZU, value: 3 },
+                    { type: SuitType.SOUZU, value: 4 },
+                ])
+            })
+
+            it('just enough groups with 3567 without pair', () => {
+                const tiles = getTilesFromString('78m3567p1s')
+                const handVariants = getHandStructureVariants(tiles)
+
+                expect(handVariants.length).toBe(1)
+                expect(handVariants[0].minShanten).toBe(1)
+
+                const uniqueWaits = getAllUniqueWaits(handVariants, 1)
+
+                expect(uniqueWaits).toEqual([
+                    { type: SuitType.MANZU, value: 6 },
+                    { type: SuitType.MANZU, value: 9 },
+                    { type: SuitType.PINZU, value: 3 },
+                    { type: SuitType.SOUZU, value: 1 },
+                ])
+            })
+
             it('just enough groups with 3567 + 1 pair + 2 group', () => {
                 const tiles = getTilesFromString('88m3567p1256s')
                 const handVariants = getHandStructureVariants(tiles)

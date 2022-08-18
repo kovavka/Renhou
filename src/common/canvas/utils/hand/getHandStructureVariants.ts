@@ -1,9 +1,10 @@
 import { Tile } from '../../core/game-types/Tile'
 import { getBaseShantenCount } from './getBaseShantenCount'
-import { GroupingVariant, MeldVariant, splitToMelds, splitToGroups } from './splitHand'
+import { GroupingVariant, MeldVariant, splitToGroups, splitToMelds } from './splitHand'
 import { getClosestTiles } from './getClosestTiles'
 import { getTilesToCompleteSequence } from './getTilesToCompleteSequence'
 import { getUniqueTiles } from '../tiles/tileContains'
+import { SuitType } from '../../core/game-types/SuitType'
 
 // todo calculate most useless tile in hand by hand + draw tile
 
@@ -81,13 +82,16 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
     const tilesToImprove: Tile[] = []
 
     let minShantenValue = 6
+
     const meldsCount = sequences.length + triplets.length
+    const maxMeldsLeft = Math.floor(allTiles.length / 3) - meldsCount
+
     const groupInfos: GroupingInfo[] = []
 
     groupingVariants.forEach(variant => {
-        const { pairs, sequences, uselessTiles } = variant
+        const { pairs, sequences: sequentialGroups, uselessTiles } = variant
         const hasPair = pairs.length > 0
-        const groupsCount = sequences.length + pairs.length
+        const groupsCount = sequentialGroups.length + pairs.length
 
         const shantenValue = getBaseShantenCount(
             meldsCount,
@@ -97,26 +101,29 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
         )
         minShantenValue = Math.min(shantenValue, minShantenValue)
 
-        // we don't have enough groups when shanten >= groups length,
-        // so it order to reach tempai we need to get 1+ groups
-        // e.g. [12 59] need one 1 more groups
-        // [23 56 89 2] don't need any more groups
-        const needToGetMoreGroups = shantenValue !== 0 && groupsCount < minShantenValue
+        // [123 34 77] - just enough
+        // [123 34 78] - too much
+        // [12 45 78 12 55] - too much
+        const tooMuchGroups = hasPair ? groupsCount - 1 > maxMeldsLeft : groupsCount > maxMeldsLeft
 
-        // we have too many groups and we have to discard one of them to reach tempai
+        // [123 34 9 1] - need 1 pair, but not sequence
+        // [123 33 9 1] - need 1 pair or sequence
+        // [123 6 9 1 4] - need 2 more groups
+        const needToGetMoreGroups = hasPair
+            ? groupsCount - 1 < maxMeldsLeft
+            : groupsCount < maxMeldsLeft
+
+        // when we have too many groups, we have to discard one of them to reach tempai
         // BUT we shouldn't discard pair if it's the only one
         // e.g. [23 56 89 2], 3 < 2 -> can discard
         // [12 45 78 12 5 9], 4 >= 4 -> can not discard
-        const canDiscardGroup = groupsCount > minShantenValue
-        const canDiscardPair = canDiscardGroup && pairs.length > 1
+        const canDiscardGroup = tooMuchGroups
+        const canDiscardPair = tooMuchGroups && pairs.length > 1
 
-        // it's impossible to improve hand with upgrading pair to pon,
-        // when we all others groups are sequences
+        //  when we all others groups are sequences,
+        //  it's impossible to improve hand with upgrading pair to pon,
         // e.g. 11 45 -> we can improve only with 36
         const canUpgradePairToMeld = pairs.length !== 1 || uselessTiles.length !== 0
-
-        // todo maybe calc canUpgradePairToMeld and others using getBaseShantenCount?
-        //  although it won't work for shanten > 6 like 159m159p159s1234z
 
         // when we have only sequence groups we could make a pair from one of them
         //  e.g. 13 45 -> we need a pair for one of these tiles
@@ -125,11 +132,17 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
         // when we have structure like 3334, 3335, etc.
         // we have not only tanki wait for 3 or 4, but also pair 33 + waits for 34 or 35.
         // it will be an iprovement when we have tempai
-        // or when we don't have a pair with just enough number of sequental groups
+        // or when we don't have a pair with just enough number of sequential groups
         const canUnionTripletsWithSeparatedTile =
             uselessTiles.length !== 0 &&
             triplets.length !== 0 &&
-            (shantenValue === 0 || sequences.length === minShantenValue)
+            (shantenValue === 0 || (sequentialGroups.length === minShantenValue && !hasPair))
+
+        // when we have structure like 3567, etc.
+        // we have not only tanki wait for 3, but also groups 35 + 67.
+        // it will be an iprovement when we don't have enough sequential groups
+        const canUnionSequenceWithSeparatedTile =
+            uselessTiles.length !== 0 && sequences.length !== 0 && needToGetMoreGroups
 
         pairs.forEach(pair => {
             if (canUpgradePairToMeld) {
@@ -137,7 +150,7 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
             }
         })
 
-        sequences.forEach(sequence => {
+        sequentialGroups.forEach(sequence => {
             const [tileA, tileB] = sequence
             if (shouldMakePairFromSeqMeld) {
                 tilesToImprove.push(tileA)
@@ -162,6 +175,34 @@ function getRegularHandStructure(info: MeldVariant, allTiles: Tile[]): HandStruc
             if (canUnionTripletsWithSeparatedTile) {
                 triplets.forEach(meld => {
                     tilesToImprove.push(...getTilesToCompleteSequence(meld[0], tile))
+                })
+            }
+
+            if (canUnionSequenceWithSeparatedTile && tile.type !== SuitType.JIHAI) {
+                // we already added closest tile, so we need only 1 farthest tile
+                // for 3567 it will be 8, for 3457 - 2
+                sequences.forEach(meld => {
+                    if (meld[0].type !== tile.type) {
+                        return
+                    }
+                    const [tileA, tileB, tileC] = meld
+                    const maxFromMeld = Math.max(tileA.value, tileB.value, tileC.value)
+                    const minFromMeld = Math.min(tileA.value, tileB.value, tileC.value)
+                    if (
+                        minFromMeld > tile.value &&
+                        minFromMeld - tile.value === 2 &&
+                        maxFromMeld !== 9
+                    ) {
+                        // 3 + 567
+                        tilesToImprove.push({ type: tile.type, value: maxFromMeld + 1 })
+                    } else if (
+                        maxFromMeld < tile.value &&
+                        tile.value - minFromMeld === 2 &&
+                        maxFromMeld !== 1
+                    ) {
+                        // 345 + 7
+                        tilesToImprove.push({ type: tile.type, value: minFromMeld - 1 })
+                    }
                 })
             }
         })
