@@ -8,4 +8,5 @@ export interface IMahjongService {
     start(): void
     handTileClick(tile: Tile): void
     drawTileClick(): void
+    tsumoClick(): void
 }

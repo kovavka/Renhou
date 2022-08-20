@@ -1,4 +1,9 @@
 import { EasyBotPlayer } from '../EasyBotPlayer'
+import { Hand } from '../../../../core/game-types/Hand'
+import { getTilesFromString } from '../../../../utils/hand/getTilesFromString'
+import { SuitType } from '../../../../core/game-types/SuitType'
+import { Tile } from '../../../../core/game-types/Tile'
+import { DrawTile } from '../../../../core/game-types/DrawTile'
 
 describe('EasyBotPlayer', () => {
     let botPlayer: EasyBotPlayer
@@ -9,6 +14,20 @@ describe('EasyBotPlayer', () => {
 
     describe('chooseTile', () => {
         it('', () => {})
+
+        it('1', () => {
+            const tiles = getTilesFromString('1579m34789p189s4z')
+            const hand: Hand = {
+                tiles,
+                openMelds: [],
+                riichi: false,
+            }
+
+            botPlayer.setHand(hand)
+
+            const drawTile: DrawTile = { type: SuitType.SOUZU, value: 3, fromDeadWall: false }
+            expect(botPlayer.chooseTile(drawTile)).not.toEqual({ type: SuitType.PINZU, value: 2 })
+        })
 
         // 9m36799p3567s123z + 4p
         /*

@@ -14,7 +14,7 @@ import { getNextGameState } from './utils/getNextGameState'
 import { DrawOutcome, Outcome, TsumoOutcome } from './state/Outcome'
 import { OutcomeType } from './state/OutcomeType'
 
-const BOT_THINKING_TIMEOUT = 1000
+const BOT_THINKING_TIMEOUT = 10
 
 export class MahjongServiceImpl implements IMahjongService {
     gameState: GameState | undefined
@@ -31,13 +31,7 @@ export class MahjongServiceImpl implements IMahjongService {
     start(): void {
         const newState = generateNewGame()
 
-        this.botPlayers[Side.TOP]?.setHand(newState.hands[Side.TOP])
-        this.botPlayers[Side.LEFT]?.setHand(newState.hands[Side.LEFT])
-        this.botPlayers[Side.RIGHT]?.setHand(newState.hands[Side.RIGHT])
-
-        this.updateState(newState)
-
-        this.tryRunBotTurn(newState)
+        this.startNewRound(newState)
     }
 
     handTileClick(tile: Tile): void {
@@ -78,6 +72,23 @@ export class MahjongServiceImpl implements IMahjongService {
         this.finishTurn(newState)
     }
 
+    tsumoClick(): void {
+        const { gameState } = this
+        if (gameState === undefined) {
+            return
+        }
+
+        // todo check if really tsumo?
+
+        const outcome: TsumoOutcome = {
+            type: OutcomeType.TSUMO,
+            winner: Side.BOTTOM,
+        }
+
+        this.finishRound(outcome)
+        console.log('tsumo')
+    }
+
     private finishRound(outcome: Outcome): void {
         const { gameState } = this
         if (gameState === undefined) {
@@ -96,6 +107,16 @@ export class MahjongServiceImpl implements IMahjongService {
         }, 5000)
     }
 
+    private startNewRound(newState: GameState): void {
+        this.botPlayers[Side.TOP]?.setHand(newState.hands[Side.TOP])
+        this.botPlayers[Side.LEFT]?.setHand(newState.hands[Side.LEFT])
+        this.botPlayers[Side.RIGHT]?.setHand(newState.hands[Side.RIGHT])
+
+        this.updateState(newState)
+
+        this.tryRunBotTurn(newState)
+    }
+
     private startNextRound(): void {
         const { gameState } = this
         if (gameState === undefined) {
@@ -104,9 +125,7 @@ export class MahjongServiceImpl implements IMahjongService {
 
         // todo check if it was the last round
         const newState = getNextGameState(gameState)
-        this.updateState(newState)
-
-        this.tryRunBotTurn(newState)
+        this.startNewRound(newState)
     }
 
     private finishTurn(gameState: GameState): void {

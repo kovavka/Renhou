@@ -13,10 +13,14 @@ import { colors } from '../../../../design-tokens/colors'
 import { Rectangle } from '../../../core/Rectangle'
 import { GameState } from '../../../services/mahjong/state/GameState'
 import { OutcomeType } from '../../../services/mahjong/state/OutcomeType'
+import { drawText } from '../../../utils/drawing/text'
+import { isAgari } from '../../../utils/hand/isAgari'
+import { CallButton } from './CallButton'
 
 const TILE_OFFSET = 2
 const DRAW_TILE_OFFSET = 8
 const SCREEN_OFFSET = 10
+const BUTTON_OFFSET = 10
 
 const OTHER_HANDS_SCALE_PERCENT = 0.8
 
@@ -186,6 +190,11 @@ export class TableContainer {
             tileView.render()
             gameObjects.push(tileView)
         }
+
+        const buttonStartX = x
+        const buttonEndY = posY - BUTTON_OFFSET
+
+        this.renderCallButtons(context, gameState, gameObjects, buttonStartX, buttonEndY)
     }
 
     private static renderDiscard(
@@ -230,8 +239,8 @@ export class TableContainer {
 
     private static renderCenter(
         context: Context,
-        gameObjects: CanvasObject[],
         gameState: GameState,
+        gameObjects: CanvasObject[],
         screenWidth: number,
         screenHeight: number,
         tileScale: number
@@ -249,21 +258,26 @@ export class TableContainer {
             4
         )
 
-        context.font = '48px serif'
-        context.textBaseline = 'middle'
-
         const { outcome, liveWall } = gameState
 
         if (outcome === undefined) {
             const tilesLeft = liveWall.length.toString()
-            const textObj = context.measureText(tilesLeft)
-            context.fillStyle = colors.mahjongCenterText
-            context.fillText(tilesLeft, (screenWidth - textObj.width) / 2, screenHeight / 2)
+            drawText(
+                context,
+                tilesLeft,
+                48,
+                colors.mahjongCenterText,
+                new Rectangle(0, 0, screenWidth, screenHeight)
+            )
         } else {
             const outcomeText = OutcomeType[outcome.type]
-            const textObj = context.measureText(outcomeText)
-            context.fillStyle = colors.mahjongCenterText
-            context.fillText(outcomeText, (screenWidth - textObj.width) / 2, screenHeight / 2)
+            drawText(
+                context,
+                outcomeText,
+                48,
+                colors.mahjongCenterText,
+                new Rectangle(0, 0, screenWidth, screenHeight)
+            )
         }
 
         const minTileSideOffset = minTileSide + TILE_OFFSET
@@ -322,6 +336,40 @@ export class TableContainer {
             Side.BOTTOM,
             tileScale
         )
+    }
+
+    static renderCallButtons(
+        context: Context,
+        gameState: GameState,
+        gameObjects: CanvasObject[],
+        startX: number,
+        endY: number
+    ): void {
+        const { currentTurn, hands, outcome } = gameState
+        const { side, drawTile } = currentTurn
+
+        const buttonWidth = 120
+        const buttonHeight = 36
+        const posY = endY - buttonHeight
+        let posX = startX
+
+        if (side === Side.BOTTOM && outcome === undefined) {
+            const tiles = hands[side].tiles
+            // todo maybe create Player and move isAgari there, so we don't need to recalculate it if nothing changed?
+            if (isAgari(tiles, drawTile)) {
+                const tsumoClick = MahjongService.instance.tsumoClick.bind(MahjongService.instance)
+
+                const button = new CallButton(
+                    context,
+                    'Tsumo',
+                    new Rectangle(posX, posY, buttonWidth, buttonHeight),
+                    tsumoClick
+                )
+                button.render()
+                gameObjects.push(button)
+                posX += BUTTON_OFFSET + buttonWidth
+            }
+        }
     }
 
     static render(context: Context, width: number, height: number): CanvasObject[] {
@@ -384,7 +432,7 @@ export class TableContainer {
                 bottomSideScale
             )
 
-            this.renderCenter(context, gameObjects, gameState, width, height, otherTilesScale)
+            this.renderCenter(context, gameState, gameObjects, width, height, otherTilesScale)
         }
 
         return gameObjects
