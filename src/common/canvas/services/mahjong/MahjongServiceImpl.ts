@@ -8,6 +8,7 @@ import { generateNewGame } from './utils/generateNewGame'
 import { IBotPlayer } from './bot-players/IBotPlayer'
 import { EasyBotPlayer } from './bot-players/EasyBotPlayer'
 import { excludeTiles } from '../../utils/tiles/tileContains'
+import { isAgari } from '../../utils/hand/isAgari'
 
 const BOT_THINKING_TIMEOUT = 1000
 
@@ -116,10 +117,19 @@ export class MahjongServiceImpl implements IMahjongService {
     }
 
     private tryRunBotTurn(gameState: GameState) {
-        const { currentTurn } = gameState
+        const { currentTurn, hands } = gameState
         const { side, drawTile } = currentTurn
         const botPlayer = this.botPlayers[side]
         if (botPlayer !== undefined) {
+            const hand = hands[side]
+            if (isAgari(hand.tiles, drawTile)) {
+                // todo add agari for user + ron for bots
+
+                // todo finish round
+                console.log('tsumo', Side[side])
+                return
+            }
+
             const tileToDiscard = botPlayer.chooseTile(drawTile)
             const newState =
                 tileToDiscard === undefined

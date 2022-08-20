@@ -9,7 +9,7 @@ describe('hasTempai', () => {
             expect(hasTempai(tiles)).toBe(true)
         })
 
-        it('Not a templai when there are 6 pairs and 3 duplicate tiles', () => {
+        it('Not a templai when there are 4 pairs and 3 duplicate tiles', () => {
             const tiles = getTilesFromString('1199m1199p111s56z')
             expect(hasTempai(tiles)).toBe(false)
         })
@@ -19,7 +19,7 @@ describe('hasTempai', () => {
             expect(hasTempai(tiles)).toBe(false)
         })
 
-        it('Not a templai when there are 5 pairs and 3 unique tiles', () => {
+        it('Not a templai when there are 5 pairs and 3 duplicate tiles', () => {
             const tiles = getTilesFromString('1199m1199p11999s')
             expect(hasTempai(tiles)).toBe(false)
         })
