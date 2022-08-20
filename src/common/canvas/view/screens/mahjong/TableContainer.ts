@@ -5,13 +5,14 @@ import { MahjongService } from '../../../services/mahjong/MahjongService'
 import { TileView } from '../../components/tile/TileView'
 import { Side } from '../../../core/game-types/Side'
 import { EdgeType } from '../../components/tile/EdgeType'
-import { GameState } from '../../../services/mahjong/IMahjongService'
 import { TILE_SIDE_B } from '../../components/tile/consts'
 import { getTileSize } from '../../components/tile/getTileSize'
 import { Discard } from '../../../core/game-types/Discard'
 import { drawRoundRect } from '../../../utils/drawing/roundRect'
 import { colors } from '../../../../design-tokens/colors'
 import { Rectangle } from '../../../core/Rectangle'
+import { GameState } from '../../../services/mahjong/state/GameState'
+import { OutcomeType } from '../../../services/mahjong/state/OutcomeType'
 
 const TILE_OFFSET = 2
 const DRAW_TILE_OFFSET = 8
@@ -250,10 +251,20 @@ export class TableContainer {
 
         context.font = '48px serif'
         context.textBaseline = 'middle'
-        const tilesLeft = gameState.liveWall.length.toString()
-        const textObj = context.measureText(tilesLeft)
-        context.fillStyle = colors.mahjongCenterText
-        context.fillText(tilesLeft, (screenWidth - textObj.width) / 2, screenHeight / 2)
+
+        const { outcome, liveWall } = gameState
+
+        if (outcome === undefined) {
+            const tilesLeft = liveWall.length.toString()
+            const textObj = context.measureText(tilesLeft)
+            context.fillStyle = colors.mahjongCenterText
+            context.fillText(tilesLeft, (screenWidth - textObj.width) / 2, screenHeight / 2)
+        } else {
+            const outcomeText = OutcomeType[outcome.type]
+            const textObj = context.measureText(outcomeText)
+            context.fillStyle = colors.mahjongCenterText
+            context.fillText(outcomeText, (screenWidth - textObj.width) / 2, screenHeight / 2)
+        }
 
         const minTileSideOffset = minTileSide + TILE_OFFSET
         const maxTileSideOffset = maxTileSide + TILE_OFFSET

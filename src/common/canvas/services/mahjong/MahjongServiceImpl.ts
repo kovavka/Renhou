@@ -1,4 +1,4 @@
-import { GameState, IMahjongService } from './IMahjongService'
+import { IMahjongService } from './IMahjongService'
 import { Side } from '../../core/game-types/Side'
 import { sortTiles } from '../../utils/game/sortTiles'
 import { getNextSide } from '../../utils/game/prevNextSide'
@@ -9,6 +9,10 @@ import { IBotPlayer } from './bot-players/IBotPlayer'
 import { EasyBotPlayer } from './bot-players/EasyBotPlayer'
 import { excludeTiles } from '../../utils/tiles/tileContains'
 import { isAgari } from '../../utils/hand/isAgari'
+import { GameState } from './state/GameState'
+import { getNextGameState } from './utils/getNextGameState'
+import { DrawOutcome, Outcome, TsumoOutcome } from './state/Outcome'
+import { OutcomeType } from './state/OutcomeType'
 
 const BOT_THINKING_TIMEOUT = 1000
 
@@ -74,11 +78,46 @@ export class MahjongServiceImpl implements IMahjongService {
         this.finishTurn(newState)
     }
 
-    private finishTurn(gameState: GameState) {
+    private finishRound(outcome: Outcome): void {
+        const { gameState } = this
+        if (gameState === undefined) {
+            return
+        }
+
+        const newState: GameState = {
+            ...gameState,
+            outcome,
+        }
+        this.updateState(newState)
+
+        // todo start next on button click
+        setTimeout(() => {
+            this.startNextRound()
+        }, 5000)
+    }
+
+    private startNextRound(): void {
+        const { gameState } = this
+        if (gameState === undefined) {
+            return
+        }
+
+        // todo check if it was the last round
+        const newState = getNextGameState(gameState)
+        this.updateState(newState)
+
+        this.tryRunBotTurn(newState)
+    }
+
+    private finishTurn(gameState: GameState): void {
         // todo check if bot wants to make a call
 
         if (gameState.liveWall.length === 0) {
-            // finish game
+            const outcome: DrawOutcome = {
+                type: OutcomeType.DRAW,
+                winners: [], // todo
+            }
+            this.finishRound(outcome)
             return
         }
 
@@ -123,10 +162,14 @@ export class MahjongServiceImpl implements IMahjongService {
         if (botPlayer !== undefined) {
             const hand = hands[side]
             if (isAgari(hand.tiles, drawTile)) {
-                // todo add agari for user + ron for bots
-
-                // todo finish round
+                // todo add check tsumo for user + ron for bots and user
+                const outcome: TsumoOutcome = {
+                    type: OutcomeType.TSUMO,
+                    winner: side,
+                }
                 console.log('tsumo', Side[side])
+
+                this.finishRound(outcome)
                 return
             }
 
