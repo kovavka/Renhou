@@ -3,4 +3,5 @@ export enum OutcomeType {
     ABORTIVE_DRAW,
     TSUMO,
     RON,
+    NAGASHI,
 }

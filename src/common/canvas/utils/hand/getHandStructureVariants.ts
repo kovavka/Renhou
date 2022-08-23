@@ -32,7 +32,6 @@ export type HandStructureInfo = {
      */
     minShanten: number
 
-    // todo maybe we don't need it?
     splittingInfo: MeldVariant
 
     groupingVariants: GroupingInfo[]

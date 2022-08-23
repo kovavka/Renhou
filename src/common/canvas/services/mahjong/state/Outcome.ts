@@ -6,6 +6,11 @@ export type DrawOutcome = {
     winners: Side[]
 }
 
+export type NagashiOutcome = {
+    type: OutcomeType.NAGASHI
+    winners: Side[]
+}
+
 export type TsumoOutcome = {
     type: OutcomeType.TSUMO
     winner: Side
