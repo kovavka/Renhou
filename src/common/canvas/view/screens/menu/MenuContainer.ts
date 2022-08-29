@@ -3,7 +3,7 @@ import { CanvasObject } from '../../../core/CanvasObject'
 import { MenuButton } from './MenuButton'
 import { colors } from '../../../../design-tokens/colors'
 import { Rectangle } from '../../../core/Rectangle'
-import { AppService } from '../../../services/app/AppService'
+import { AppService } from '../../../../services/app/AppService'
 
 export class MenuContainer {
     static render(context: Context, width: number, height: number): CanvasObject[] {

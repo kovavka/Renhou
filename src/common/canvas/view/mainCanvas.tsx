@@ -2,8 +2,8 @@ import React, { CSSProperties, MouseEvent, useEffect, useRef } from 'react'
 import { colors } from '../../design-tokens/colors'
 import { TileView } from './components/tile/TileView'
 import { Rectangle } from '../core/Rectangle'
-import { Side } from '../core/game-types/Side'
-import { CanvasService } from '../services/canvas/CanvasService'
+import { Side } from '../../game-types/Side'
+import { CanvasService } from '../canvas-service/CanvasService'
 
 const STYLES: CSSProperties = {
     width: '100vw',

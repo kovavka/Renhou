@@ -1,14 +1,14 @@
 import { CanvasObject } from '../../../core/CanvasObject'
 import { Context } from '../../../core/Context'
 import { Rectangle } from '../../../core/Rectangle'
-import { Side } from '../../../core/game-types/Side'
-import { drawRoundRect } from '../../../utils/drawing/roundRect'
-import { drawImageRotated } from '../../../utils/drawing/image'
+import { Side } from '../../../../game-types/Side'
+import { drawRoundRect } from '../../../drawing-utils/roundRect'
+import { drawImageRotated } from '../../../drawing-utils/image'
 import { colors } from '../../../../design-tokens/colors'
-import { SpriteLoader } from '../../../services/sprite-loader/SpriteLoader'
-import { Tile } from '../../../core/game-types/Tile'
+import { SpriteLoader } from '../../../../services/sprite-loader/SpriteLoader'
+import { Tile } from '../../../../game-types/Tile'
 import { EdgeType } from './EdgeType'
-import { drawRotatedObject } from '../../../utils/drawing/rotated'
+import { drawRotatedObject } from '../../../drawing-utils/rotated'
 import {
     TILE_IMG_HEIGHT,
     TILE_IMG_WIDTH,

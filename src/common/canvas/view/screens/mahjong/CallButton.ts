@@ -1,9 +1,9 @@
 import { CanvasObject } from '../../../core/CanvasObject'
-import { drawRoundRect } from '../../../utils/drawing/roundRect'
+import { drawRoundRect } from '../../../drawing-utils/roundRect'
 import { colors } from '../../../../design-tokens/colors'
 import { Context } from '../../../core/Context'
 import { Rectangle } from '../../../core/Rectangle'
-import { drawText } from '../../../utils/drawing/text'
+import { drawText } from '../../../drawing-utils/text'
 
 // todo add scale
 export class CallButton extends CanvasObject {

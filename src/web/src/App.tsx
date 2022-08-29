@@ -1,7 +1,7 @@
 import React, {useEffect} from 'react';
 import './App.css';
 import {MainCanvas} from "../../common/canvas/view/mainCanvas";
-import {CanvasService} from "../../common/canvas/services/canvas/CanvasService";
+import {CanvasService} from "../../common/canvas/canvas-service/CanvasService";
 
 function onResize() {
     CanvasService.instance.updateSize(window.innerWidth, window.innerHeight)
