@@ -1,5 +1,5 @@
-import { Tile } from '../../game-types/Tile'
-import { SuitType } from '../../game-types/SuitType'
+import { Tile } from '../../core/game-types/Tile'
+import { SuitType } from '../../core/game-types/SuitType'
 
 export function getTilesToCompleteSequence(tileA: Tile, tileB: Tile): [Tile] | [Tile, Tile] | [] {
     if (tileA.type !== tileB.type || tileA.type === SuitType.JIHAI) {

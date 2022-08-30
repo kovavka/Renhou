@@ -1,4 +1,4 @@
-import { Tile } from '../../game-types/Tile'
+import { Tile } from '../../core/game-types/Tile'
 import { getHandStructureVariants } from './getHandStructureVariants'
 import { hasTiles, isTheSameTile } from '../tiles/tileContains'
 import { getChiitoiInfo } from './getChiitoiInfo'

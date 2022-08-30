@@ -1,5 +1,5 @@
 import { getTilesToCompleteSequence } from '../getTilesToCompleteSequence'
-import { SuitType } from '../../../game-types/SuitType'
+import { SuitType } from '../../../core/game-types/SuitType'
 
 describe('getTilesToCompleteSequence', () => {
     describe('Sequential group', () => {

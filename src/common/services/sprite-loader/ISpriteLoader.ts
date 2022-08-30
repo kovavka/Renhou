@@ -1,4 +1,4 @@
-import { SuitType } from '../../game-types/SuitType'
+import { SuitType } from '../../core/game-types/SuitType'
 
 export interface ISpriteLoader {
     readonly allLoaded: boolean

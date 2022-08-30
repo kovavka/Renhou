@@ -1,5 +1,5 @@
-import { SuitType } from '../../game-types/SuitType'
-import { Tile } from '../../game-types/Tile'
+import { SuitType } from '../../core/game-types/SuitType'
+import { Tile } from '../../core/game-types/Tile'
 
 function addTiles(all: Tile[], type: SuitType, value: number) {
     const tile = { type, value }

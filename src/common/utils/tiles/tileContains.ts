@@ -1,4 +1,4 @@
-import { Tile } from '../../game-types/Tile'
+import { Tile } from '../../core/game-types/Tile'
 
 export function excludeTiles(all: Tile[], ...tilesToExclude: Tile[]): Tile[] {
     const result: Tile[] = []

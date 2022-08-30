@@ -1,16 +1,18 @@
-import {Wind} from "../../services/mahjong/state/Wind";
+import { Wind } from '../../services/mahjong/state/Wind'
+import { Tile } from '../../core/game-types/Tile'
+import { SuitType } from '../../core/game-types/SuitType'
+import { EAST_VALUE, NORTH_VALUE, SOUTH_VALUE, WEST_VALUE } from '../../core/consts/honors'
 
-// should match images
-export function getTileByWind(wind: Wind): number {
+export function getTileByWind(wind: Wind): Tile {
     switch (wind) {
         case Wind.EAST:
-            return 1
+            return { value: EAST_VALUE, type: SuitType.JIHAI }
         case Wind.SOUTH:
-            return 2
+            return { value: SOUTH_VALUE, type: SuitType.JIHAI }
         case Wind.WEST:
-            return 3
+            return { value: WEST_VALUE, type: SuitType.JIHAI }
         case Wind.NORTH:
-            return 4
+            return { value: NORTH_VALUE, type: SuitType.JIHAI }
         default:
             throw new Error('unknown wind type')
     }

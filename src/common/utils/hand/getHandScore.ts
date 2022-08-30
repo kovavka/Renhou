@@ -1,8 +1,8 @@
 import { getHandStructureVariants } from './getHandStructureVariants'
 import { getHanByYaku } from '../yaku/getHanByYaku'
-import { SimpleYaky, Yakuman } from '../../game-types/Yaku'
-import {Meld} from "../../game-types/Meld";
-import {Tile} from "../../game-types/Tile";
+import { SimpleYaky, Yakuman } from '../../core/game-types/Yaku'
+import { Meld } from '../../core/game-types/Meld'
+import { Tile } from '../../core/game-types/Tile'
 
 type ScoreInfo = {
     yakuList: {

@@ -1,8 +1,8 @@
 import { GameState } from '../state/GameState'
-import { Side } from '../../../game-types/Side'
+import { Side } from '../../../core/game-types/Side'
 import { generateNewRound } from './generateNewRound'
-import { GameTurn } from '../../../game-types/GameTurn'
-import { Hand } from '../../../game-types/Hand'
+import { GameTurn } from '../../../core/game-types/GameTurn'
+import { Hand } from '../../../core/game-types/Hand'
 
 export function getEmptyState(
     dealerSide: Side

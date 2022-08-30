@@ -1,5 +1,5 @@
-import { Tile } from '../../game-types/Tile'
-import { SuitType } from '../../game-types/SuitType'
+import { Tile } from '../../core/game-types/Tile'
+import { SuitType } from '../../core/game-types/SuitType'
 
 export function getTerimalAndHonors(): Tile[] {
     return [

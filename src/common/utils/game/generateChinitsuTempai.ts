@@ -1,6 +1,6 @@
 // todo refactor (really old code)
 
-import {WaitPatternType} from "../../game-types/WaitPatternType";
+import { WaitPatternType } from '../../core/game-types/WaitPatternType'
 
 export function generateChinitsuTempai(handLength: number): {
     hand: number[]

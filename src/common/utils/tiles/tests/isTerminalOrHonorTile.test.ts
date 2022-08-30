@@ -1,5 +1,5 @@
 import { isTerminalOrHonorTile } from '../isTerminalOrHonorTile'
-import { SuitType } from '../../../game-types/SuitType'
+import { SuitType } from '../../../core/game-types/SuitType'
 
 describe('isTerminalOrHonorTile', () => {
     it('should determine man 1 as terminal or honor tile', () => {

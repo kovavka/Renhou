@@ -1,12 +1,12 @@
-import { Tile } from '../../../game-types/Tile'
-import { DeadWallTile } from '../../../game-types/DeadWallTile'
-import { Side } from '../../../game-types/Side'
-import { Hand } from '../../../game-types/Hand'
-import { Discard } from '../../../game-types/Discard'
-import { GameTurn } from '../../../game-types/GameTurn'
+import { Tile } from '../../../core/game-types/Tile'
+import { DeadWallTile } from '../../../core/game-types/DeadWallTile'
+import { Side } from '../../../core/game-types/Side'
+import { Hand } from '../../../core/game-types/Hand'
+import { Discard } from '../../../core/game-types/Discard'
+import { GameTurn } from '../../../core/game-types/GameTurn'
 import { Wind } from './Wind'
 import { Outcome } from './Outcome'
-import { Meld } from '../../../game-types/Meld'
+import { Meld } from '../../../core/game-types/Meld'
 
 // todo add this to game state
 type PlayerState = {

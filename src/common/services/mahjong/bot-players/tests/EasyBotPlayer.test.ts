@@ -1,9 +1,9 @@
 import { EasyBotPlayer } from '../EasyBotPlayer'
-import { Hand } from '../../../../game-types/Hand'
+import { Hand } from '../../../../core/game-types/Hand'
 import { getTilesFromString } from '../../../../utils/hand/getTilesFromString'
-import { SuitType } from '../../../../game-types/SuitType'
-import { Tile } from '../../../../game-types/Tile'
-import { DrawTile } from '../../../../game-types/DrawTile'
+import { SuitType } from '../../../../core/game-types/SuitType'
+import { Tile } from '../../../../core/game-types/Tile'
+import { DrawTile } from '../../../../core/game-types/DrawTile'
 
 describe('EasyBotPlayer', () => {
     let botPlayer: EasyBotPlayer

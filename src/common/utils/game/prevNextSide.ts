@@ -1,4 +1,4 @@
-import { Side } from '../../game-types/Side'
+import { Side } from '../../core/game-types/Side'
 
 export function getNextSide(side: Side): Side {
     switch (side) {

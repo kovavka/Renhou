@@ -2,8 +2,8 @@ import { getHandStructureVariants, HandStructureInfo } from '../getHandStructure
 import { getUniqueTiles, hasTiles } from '../../tiles/tileContains'
 import { sortTiles } from '../../game/sortTiles'
 import { getTilesFromString } from '../getTilesFromString'
-import { SuitType } from '../../../game-types/SuitType'
-import { Tile } from '../../../game-types/Tile'
+import { SuitType } from '../../../core/game-types/SuitType'
+import { Tile } from '../../../core/game-types/Tile'
 
 describe('getHandStructureVariants', () => {
     // todo add test for useful tiles (and maybe check it in smart bot):

@@ -1,4 +1,4 @@
-import { Tile } from '../../game-types/Tile'
+import { Tile } from '../../core/game-types/Tile'
 import { isTheSameTile } from './tileContains'
 
 export function groupIdenticalTiles(tiles: Tile[]): { tile: Tile; count: number }[] {

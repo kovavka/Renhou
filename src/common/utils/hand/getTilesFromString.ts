@@ -1,5 +1,5 @@
-import { SuitType } from '../../game-types/SuitType'
-import { Tile } from '../../game-types/Tile'
+import { SuitType } from '../../core/game-types/SuitType'
+import { Tile } from '../../core/game-types/Tile'
 
 const tilesRegexp = new RegExp('^(([1-9]*)m)?(([1-9]*)p)?(([1-9]*)s)?(([1-7]*)z)?$')
 

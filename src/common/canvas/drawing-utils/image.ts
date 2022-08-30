@@ -1,6 +1,6 @@
 import { Context } from '../core/Context'
 import { Rectangle } from '../core/Rectangle'
-import { Side } from '../../game-types/Side'
+import { Side } from '../../core/game-types/Side'
 import { drawRotatedObject } from './rotated'
 
 export function drawImageRotated(

@@ -1,8 +1,8 @@
 import { generateWall } from '../../../utils/game/wallGenerator'
 import { sortTiles } from '../../../utils/game/sortTiles'
-import { DeadWallTile } from '../../../game-types/DeadWallTile'
-import { DrawTile } from '../../../game-types/DrawTile'
-import { Tile } from '../../../game-types/Tile'
+import { DeadWallTile } from '../../../core/game-types/DeadWallTile'
+import { DrawTile } from '../../../core/game-types/DrawTile'
+import { Tile } from '../../../core/game-types/Tile'
 
 export type RoundState = {
     liveWall: Tile[]

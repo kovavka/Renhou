@@ -1,4 +1,4 @@
-import { SimpleYaky } from '../../game-types/Yaku'
+import { SimpleYaky } from '../../core/game-types/Yaku'
 
 const closedOnly = [
     SimpleYaky.MENZEN_TSUMO,
@@ -33,7 +33,7 @@ export function getHanByYaku(yaku: SimpleYaky, isOpen: boolean): number {
         case SimpleYaky.DOUBLE_RIICHI:
         case SimpleYaky.SANSHOKU_DOUKOU:
         case SimpleYaky.TOITOI:
-        case SimpleYaky.SHANANKOU:
+        case SimpleYaky.SANANKOU:
         case SimpleYaky.SANKANTSU:
         case SimpleYaky.CHIITOITSU:
         case SimpleYaky.HONROUTOU:

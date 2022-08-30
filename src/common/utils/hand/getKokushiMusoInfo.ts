@@ -1,4 +1,4 @@
-import { Tile } from '../../game-types/Tile'
+import { Tile } from '../../core/game-types/Tile'
 import { getIdenticalTileCount, getUniqueTiles } from '../tiles/tileContains'
 import { isTerminalOrHonorTile } from '../tiles/isTerminalOrHonorTile'
 import { getTerimalAndHonors } from '../tiles/getTerimalAndHonors'

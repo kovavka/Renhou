@@ -1,4 +1,4 @@
-import { SuitType } from '../../../game-types/SuitType'
+import { SuitType } from '../../../core/game-types/SuitType'
 import { getClosestTiles } from '../getClosestTiles'
 
 describe('getClosestTiles', () => {

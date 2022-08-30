@@ -1,5 +1,5 @@
 import { OutcomeType } from './OutcomeType'
-import { Side } from '../../../game-types/Side'
+import { Side } from '../../../core/game-types/Side'
 
 export type DrawOutcome = {
     type: OutcomeType.DRAW

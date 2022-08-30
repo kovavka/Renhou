@@ -1,4 +1,4 @@
-import { Side } from '../../../game-types/Side'
+import { Side } from '../../../core/game-types/Side'
 import { GameState } from '../state/GameState'
 import { Wind } from '../state/Wind'
 import { getEmptyState } from './getEmptyState'

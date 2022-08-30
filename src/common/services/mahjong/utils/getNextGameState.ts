@@ -1,5 +1,5 @@
 import { GameState } from '../state/GameState'
-import { Side } from '../../../game-types/Side'
+import { Side } from '../../../core/game-types/Side'
 import { getEmptyState } from './getEmptyState'
 import { getNextWind } from './getNextWind'
 import { OutcomeType } from '../state/OutcomeType'

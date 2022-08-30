@@ -1,4 +1,4 @@
-import { Tile } from '../../game-types/Tile'
+import { Tile } from '../../core/game-types/Tile'
 import { groupIdenticalTiles } from '../tiles/groupIdenticalTiles'
 
 export type ChiitoiInfo = {

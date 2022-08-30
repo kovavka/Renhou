@@ -1,6 +1,6 @@
 import { hasTiles } from '../tileContains'
 import { getTilesFromString } from '../../hand/getTilesFromString'
-import { SuitType } from '../../../game-types/SuitType'
+import { SuitType } from '../../../core/game-types/SuitType'
 
 describe('hasTiles', () => {
     it('should find a tile in a list if exists', () => {

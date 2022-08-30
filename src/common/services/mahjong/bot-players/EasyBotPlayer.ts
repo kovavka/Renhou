@@ -1,11 +1,11 @@
 import { IBotPlayer } from './IBotPlayer'
-import { Tile } from '../../../game-types/Tile'
-import { DrawTile } from '../../../game-types/DrawTile'
+import { Tile } from '../../../core/game-types/Tile'
+import { DrawTile } from '../../../core/game-types/DrawTile'
 import {
     getHandStructureVariants,
     HandStructureInfo,
 } from '../../../utils/hand/getHandStructureVariants'
-import { Hand } from '../../../game-types/Hand'
+import { Hand } from '../../../core/game-types/Hand'
 import { getUniqueTiles, hasTiles, isTheSameTile } from '../../../utils/tiles/tileContains'
 import { getTilesToCompleteSequence } from '../../../utils/hand/getTilesToCompleteSequence'
 import { ChiitoiInfo, getChiitoiInfo } from '../../../utils/hand/getChiitoiInfo'

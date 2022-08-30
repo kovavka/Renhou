@@ -15,31 +15,42 @@ export enum Yakuman {
 }
 
 export enum SimpleYaky {
+    // situational
     MENZEN_TSUMO,
     RIICHI,
+    DOUBLE_RIICHI,
     IPPATSU,
-    PINFU,
-    IIPEIKOU,
     HAITEI,
     HOUTEI,
     RINSHAN,
     CHANKAN,
+
+    // sequential based
+    PINFU,
+    IIPEIKOU,
+    SANSHOKU,
+    ITTSU,
+    RYANPEIKOU,
+
+    // triplets based
+    SANSHOKU_DOUKOU,
+    TOITOI,
+    SANANKOU,
+    SANKANTSU,
+
+    // terminal/honor/simple based
     TANYAO,
     YAKUHAI_WIND,
     YAKUHAI_DRAGON,
-    DOUBLE_RIICHI,
-    CHANTA,
-    SANSHOKU,
-    SANSHOKU_DOUKOU,
-    ITTSU,
-    TOITOI,
-    SHANANKOU,
-    SANKANTSU,
-    CHIITOITSU,
-    HONROUTOU,
     SHOSANGEN,
-    HONITSU,
+    CHANTA,
+    HONROUTOU,
     JUNCHAN,
-    RYANPEIKOU,
+
+    // odd structure
+    CHIITOITSU,
+
+    // suit based
+    HONITSU,
     CHINITSU,
 }

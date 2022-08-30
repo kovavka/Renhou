@@ -1,6 +1,6 @@
 import { groupIdenticalTiles } from '../groupIdenticalTiles'
 import { getTilesFromString } from '../../hand/getTilesFromString'
-import { SuitType } from '../../../game-types/SuitType'
+import { SuitType } from '../../../core/game-types/SuitType'
 
 describe('groupIdenticalTiles', () => {
     it('should group unique items with count = 0', () => {

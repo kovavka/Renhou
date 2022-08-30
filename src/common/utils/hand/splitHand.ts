@@ -1,6 +1,6 @@
-import { Tile } from '../../game-types/Tile'
+import { Tile } from '../../core/game-types/Tile'
 import { excludeTiles, hasIdenticalTiles, hasTiles, isTheSameTile } from '../tiles/tileContains'
-import { SuitType, TILE_TYPES_STR } from '../../game-types/SuitType'
+import { SuitType, TILE_TYPES_STR } from '../../core/game-types/SuitType'
 import { sortTiles } from '../game/sortTiles'
 import { tileToString } from '../tiles/tileToString'
 

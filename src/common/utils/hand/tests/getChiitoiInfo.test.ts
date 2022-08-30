@@ -1,5 +1,5 @@
 import { getTilesFromString } from '../getTilesFromString'
-import { SuitType } from '../../../game-types/SuitType'
+import { SuitType } from '../../../core/game-types/SuitType'
 import { getChiitoiInfo } from '../getChiitoiInfo'
 
 describe('getChiitoiInfo', () => {

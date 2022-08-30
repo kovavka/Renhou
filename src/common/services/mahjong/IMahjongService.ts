@@ -1,4 +1,4 @@
-import { Tile } from '../../game-types/Tile'
+import { Tile } from '../../core/game-types/Tile'
 import signals from 'signals'
 import { GameState } from './state/GameState'
 

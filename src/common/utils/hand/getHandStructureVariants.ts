@@ -1,10 +1,10 @@
-import { Tile } from '../../game-types/Tile'
+import { Tile } from '../../core/game-types/Tile'
 import { getBaseShantenCount } from './getBaseShantenCount'
 import { GroupingVariant, MeldVariant, splitToGroups, splitToMelds } from './splitHand'
 import { getClosestTiles } from './getClosestTiles'
 import { getTilesToCompleteSequence } from './getTilesToCompleteSequence'
 import { getUniqueTiles } from '../tiles/tileContains'
-import { SuitType } from '../../game-types/SuitType'
+import { SuitType } from '../../core/game-types/SuitType'
 
 // todo calculate most useless tile in hand by hand + draw tile
 
