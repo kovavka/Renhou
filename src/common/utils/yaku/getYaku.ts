@@ -9,6 +9,7 @@ import {isTheSameTile} from '../tiles/tileContains'
 import {getTileByWind} from '../tiles/getTileByWind'
 import {CHUN_VALUE, HAKU_VALUE, HANTSU_VALUE} from '../../core/consts/honors'
 import {isTerminal, isTerminalOrHonorTile} from "../tiles/isTerminalOrHonorTile";
+import {isSimpleTile} from "../tiles/isSimpleTile";
 
 const ERROR_MESSAGE = 'Not a tempai'
 
@@ -164,6 +165,7 @@ export function hasTriplet(
     return false
 }
 
+
 function getClosedTripletsNumber(triplets: MeldTileGroup[], openMelds: Meld[]): number {
     let count = triplets.length
 
@@ -175,23 +177,25 @@ function getClosedTripletsNumber(triplets: MeldTileGroup[], openMelds: Meld[]): 
     return count
 }
 
-function getAllTripletsNumber(
+function getAllTripletTiles(
     triplets: MeldTileGroup[],
     openMelds: Meld[],
+    completedMeld: MeldTileGroup | undefined,,
     waitPatternType: WaitPatternType
-): number {
-    let count = triplets.length
+): Tile[] {
+    const allTriplets: Tile[] = triplets.map(x => x[0])
 
-    const closedKansNumber = openMelds.filter(
-        x => x.type === SetType.KAN || x.type === SetType.PON
-    ).length
-    count += closedKansNumber
+    openMelds.forEach(x => {
+        if (x.type === SetType.KAN || x.type === SetType.PON) {
+            allTriplets.push(x.fromHand[0])
+        }
+    })
 
-    if (waitPatternType === WaitPatternType.SHANPON) {
-        count++
+    if (waitPatternType === WaitPatternType.SHANPON && completedMeld !== undefined) {
+        allTriplets.push(completedMeld[0])
     }
 
-    return count
+    return allTriplets
 }
 
 function isGreenTile(tile: Tile): boolean {
@@ -211,6 +215,11 @@ function isGreenTile(tile: Tile): boolean {
         tile.value === 8
     )
 }
+
+function isTsuuiisou(allTiles: Tile[]): boolean {
+    return allTiles.every(x => x.type === SuitType.JIHAI)
+}
+
 
 function isPinfu(
     sequences: MeldTileGroup[],
@@ -237,32 +246,104 @@ function isChanta(
     allMelds: MeldTileGroup[],
     pairTile: Tile
 ): boolean {
-    const notAllMeldsContainTerminalOrHonor = allMelds.some(x => {
+    let hasSimpleTile = false
+    const allMeldsContainTerminalOrHonor = allMelds.every(x => {
         const [tileA, tileB, tileC] = x
-        return !isTerminalOrHonorTile(tileA) && !isTerminalOrHonorTile(tileB) && !isTerminalOrHonorTile(tileC)
+        const meldHasTerminalOrHonor = isTerminalOrHonorTile(tileA) || isTerminalOrHonorTile(tileB) || isTerminalOrHonorTile(tileC)
+        hasSimpleTile = isSimpleTile(tileA) || isSimpleTile(tileB) || isSimpleTile(tileC)
+
+        return meldHasTerminalOrHonor
     })
 
-    if (notAllMeldsContainTerminalOrHonor) {
-        return false
-    }
-
-    return isTerminalOrHonorTile(pairTile)
+    return allMeldsContainTerminalOrHonor && isTerminalOrHonorTile(pairTile) && hasSimpleTile
 }
 
 function isJunchan(
     allMelds: MeldTileGroup[],
     pairTile: Tile
 ): boolean {
-    const notAllMeldsContainTerminal = allMelds.some(x => {
+    let hasNonTerminalTile = false
+    const allMeldsContainTerminal = allMelds.every(x => {
         const [tileA, tileB, tileC] = x
-        return !isTerminal(tileA) && !isTerminal(tileB) && !isTerminal(tileC)
+        const meldHasTerminal = isTerminal(tileA) || isTerminal(tileB) || isTerminal(tileC)
+        hasNonTerminalTile = !isTerminal(tileA) || !isTerminal(tileB) || !isTerminal(tileC)
+
+        return meldHasTerminal
     })
 
-    if (notAllMeldsContainTerminal) {
+    return allMeldsContainTerminal && isTerminal(pairTile) && hasNonTerminalTile
+}
+
+function isChuurenPoutou(allTiles: Tile[]): boolean {
+    const suit = allTiles[0].type
+    if (suit === SuitType.JIHAI) {
         return false
     }
 
-    return isTerminal(pairTile)
+    const tilesCount: number[] = []
+    let hasAdditionalTile = false // any tile for 111-2-3-4-5-6-7-8-999 stucture
+
+    for(const tile of allTiles) {
+        if (tile.type !== suit) {
+            return false
+        }
+
+        const fromArray = tilesCount[tile.value]
+        const numberOfTiles = fromArray + 1
+
+        tilesCount[tile.value] = numberOfTiles
+
+        if (
+            (tile.value === 1 || tile.value === 1) && numberOfTiles > 3 ||
+            (tile.value !== 1 && tile.value === 9 && numberOfTiles > 1)
+        ) {
+            if (hasAdditionalTile) {
+                return false
+            } else {
+                hasAdditionalTile = true
+            }
+        }
+    }
+
+    return true
+}
+
+function differentSuitsButSameValues(tileA: Tile, tileB: Tile, tileC: Tile): boolean {
+    if (tileA.type === SuitType.JIHAI || tileB.type === SuitType.JIHAI || tileC.type === SuitType.JIHAI) {
+        return false
+    }
+
+    const haveDifferentTypes = tileA.type !== tileB.type && tileA.type !== tileC.type && tileB.type !== tileC.type
+    const haveSameValues =  tileA.value === tileB.value &&  tileA.value === tileC.value
+    return haveDifferentTypes && haveSameValues
+}
+
+function isSanshokuDoukou(allTripletTiles: Tile[]): boolean {
+    if (allTripletTiles.length < 3) {
+        return false
+    }
+
+    const [tileA,tileB, tileC, tileD] = allTripletTiles
+
+    if (differentSuitsButSameValues(tileA,tileB, tileC)) {
+        return true
+    }
+
+    if (tileD !== undefined) {
+        if (differentSuitsButSameValues(tileA, tileB, tileD)) {
+            return true
+        }
+
+        if (differentSuitsButSameValues(tileA, tileC, tileD)) {
+            return true
+        }
+
+        if (differentSuitsButSameValues(tileB, tileC, tileD)) {
+            return true
+        }
+    }
+
+    return false
 }
 
 // const isOpenHand = openMelds.some(
@@ -274,7 +355,6 @@ function isJunchan(
 
 // todo tests for 3 closed kans -> should be sanankou + sankantsu
 
-// todo some yaku are also suitable for chiitoi, maybe split?
 export function getYakuByStructure(
     allTiles: Tile[],
     sequences: MeldTileGroup[],
@@ -286,8 +366,9 @@ export function getYakuByStructure(
     roundWind: Wind,
     placeWind: Wind,
     isOpenHand: boolean
-): SimpleYaky[] | Yakuman {
+): SimpleYaky[] | Yakuman[] {
     const yakuList: SimpleYaky[] = []
+    const yakumanList: Yakuman[] = []
 
     const allMelds: MeldTileGroup[] = sequences.concat(triplets)
     openMelds.forEach(x => {
@@ -302,72 +383,28 @@ export function getYakuByStructure(
 
     const closedTripletsNumber = getClosedTripletsNumber(triplets, openMelds)
     if (closedTripletsNumber === 4) {
-        return Yakuman.SUUANKOU
-    }
-
-    if (closedTripletsNumber === 3) {
-        yakuList.push(SimpleYaky.SANANKOU)
+        yakumanList.push(Yakuman.SUUANKOU)
     }
 
     const kansNumber = openMelds.filter(x => x.type === SetType.KAN).length
     if (kansNumber === 4) {
-        return Yakuman.SUUKANTSU
-    }
-
-    if (kansNumber === 3) {
-        yakuList.push(SimpleYaky.SANKANTSU)
-    }
-
-    const allTripletsNumber = getAllTripletsNumber(triplets, openMelds, waitPatternType)
-    if (allTripletsNumber === 4) {
-        yakuList.push(SimpleYaky.TOITOI)
+        yakumanList.push(Yakuman.SUUKANTSU)
     }
 
     const onlyGreens = allTiles.every(isGreenTile)
     if (onlyGreens) {
-        return Yakuman.RYUUIISOU
+        yakumanList.push(Yakuman.RYUUIISOU)
     }
 
     const onlyTerminals = allTiles.every(
         x => x.type !== SuitType.JIHAI && (x.value === 1 || x.value === 9)
     )
     if (onlyTerminals) {
-        return Yakuman.CHINROUTOU
+        yakumanList.push(Yakuman.CHINROUTOU)
     }
 
-    const onlyHonors = allTiles.every(x => x.type === SuitType.JIHAI)
-    if (onlyHonors) {
-        return Yakuman.TSUUIISOU
-    }
-
-    const onlySimples = allTiles.every(
-        x => x.type !== SuitType.JIHAI && x.value !== 1 && x.value !== 9
-    )
-    if (onlySimples) {
-        yakuList.push(SimpleYaky.TANYAO)
-    }
-
-    // TSUUIISOU and CHINROUTOU should be checked before
-    const onlyTerminalsOrHonors = allTiles.every(isTerminalOrHonorTile)
-    if (onlyTerminalsOrHonors) {
-        yakuList.push(SimpleYaky.HONROUTOU)
-    } else if (isJunchan(allMelds, finalPairTile)) {
-        yakuList.push(SimpleYaky.JUNCHAN)
-    } else if (isChanta(allMelds, finalPairTile)) {
-        yakuList.push(SimpleYaky.CHANTA)
-    }
-
-    const theOnlyPossibleSuit = allTiles.find(x => x.type !== SuitType.JIHAI)?.type
-    if (theOnlyPossibleSuit !== undefined) {
-        const onlyOneSuit = allTiles.every(x => x.type === theOnlyPossibleSuit)
-        if (onlyOneSuit) {
-            yakuList.push(SimpleYaky.CHINITSU)
-        }
-
-        const onlyOneSuitAndHonors = allTiles.every(x => x.type === theOnlyPossibleSuit || x.type === SuitType.JIHAI)
-        if (onlyOneSuitAndHonors) {
-            yakuList.push(SimpleYaky.HONITSU)
-        }
+    if (isTsuuiisou(allTiles)) {
+        yakumanList.push(Yakuman.TSUUIISOU)
     }
 
     const chun = { value: CHUN_VALUE, type: SuitType.JIHAI }
@@ -381,22 +418,7 @@ export function getYakuByStructure(
     const dragonsNumber = Number(hasChun) + Number(hasHaku) + Number(hasHatsu)
 
     if (dragonsNumber === 3) {
-        return Yakuman.DAISANGEN
-    }
-
-    if (dragonsNumber === 2) {
-        yakuList.push(SimpleYaky.YAKUHAI_DRAGON)
-        yakuList.push(SimpleYaky.YAKUHAI_DRAGON)
-
-        if (
-            (!hasChun && isTheSameTile(finalPairTile, chun)) ||
-            (!hasHaku && isTheSameTile(finalPairTile, haku)) ||
-            (!hasHatsu && isTheSameTile(finalPairTile, hatsu))
-        ) {
-            yakuList.push(SimpleYaky.SHOSANGEN)
-        }
-    } else if (dragonsNumber === 1) {
-        yakuList.push(SimpleYaky.YAKUHAI_DRAGON)
+        yakumanList.push(Yakuman.DAISANGEN)
     }
 
     const east = getTileByWind(Wind.EAST)
@@ -415,7 +437,7 @@ export function getYakuByStructure(
     const placeWindTile = getTileByWind(placeWind)
 
     if (windsNumber === 4) {
-        return Yakuman.DAISUUSHII
+        yakumanList.push(Yakuman.DAISUUSHII)
     } else if (windsNumber === 3) {
         if (
             (!hasEast && isTheSameTile(finalPairTile, east)) ||
@@ -423,9 +445,37 @@ export function getYakuByStructure(
             (!hasWest && isTheSameTile(finalPairTile, west)) ||
             (!hasNorth && isTheSameTile(finalPairTile, north))
         ) {
-            return Yakuman.SHOUSIISHI
+            yakumanList.push(Yakuman.SHOUSIISHI)
         }
+    }
 
+    if (isChuurenPoutou(allTiles)) {
+        yakumanList.push(Yakuman.CHUUREN_POUTOU)
+    }
+
+    if (yakumanList.length !== 0) {
+        return yakumanList
+    }
+
+    const commonList = getCommonSimpleYaky(allTiles)
+    yakuList.concat(commonList)
+
+    if (dragonsNumber === 2) {
+        yakuList.push(SimpleYaky.YAKUHAI_DRAGON)
+        yakuList.push(SimpleYaky.YAKUHAI_DRAGON)
+
+        if (
+            (!hasChun && isTheSameTile(finalPairTile, chun)) ||
+            (!hasHaku && isTheSameTile(finalPairTile, haku)) ||
+            (!hasHatsu && isTheSameTile(finalPairTile, hatsu))
+        ) {
+            yakuList.push(SimpleYaky.SHOSANGEN)
+        }
+    } else if (dragonsNumber === 1) {
+        yakuList.push(SimpleYaky.YAKUHAI_DRAGON)
+    }
+
+    if (windsNumber === 3) {
         if (hasTriplet(roundWindTile, triplets, openMelds, completedMeld, waitPatternType)) {
             yakuList.push(SimpleYaky.YAKUHAI_WIND)
         }
@@ -439,5 +489,70 @@ export function getYakuByStructure(
         yakuList.push(SimpleYaky.PINFU)
     }
 
+    if (closedTripletsNumber === 3) {
+        yakuList.push(SimpleYaky.SANANKOU)
+    }
+
+    if (kansNumber === 3) {
+        yakuList.push(SimpleYaky.SANKANTSU)
+    }
+
+    if (isJunchan(allMelds, finalPairTile)) {
+        yakuList.push(SimpleYaky.JUNCHAN)
+    } else if (isChanta(allMelds, finalPairTile)) {
+        yakuList.push(SimpleYaky.CHANTA)
+    }
+
+    const allTripletTiles = getAllTripletTiles(triplets, openMelds, completedMeld, waitPatternType)
+    if (allTripletTiles.length === 4) {
+        yakuList.push(SimpleYaky.TOITOI)
+    }
+
+    if (isSanshokuDoukou(allTripletTiles)) {
+        yakuList.push(SimpleYaky.SANSHOKU_DOUKOU)
+    }
+
     return []
+}
+
+/**
+ * yaky suitable for regular structure and chiitoi
+ */
+function getCommonSimpleYaky(allTiles: Tile[]): SimpleYaky[] {
+    const yakuList: SimpleYaky[] = []
+
+    const onlySimples = allTiles.every(
+        x => x.type !== SuitType.JIHAI && x.value !== 1 && x.value !== 9
+    )
+    if (onlySimples) {
+        yakuList.push(SimpleYaky.TANYAO)
+    }
+
+    const onlyTerminalsOrHonors = allTiles.every(isTerminalOrHonorTile)
+    if (onlyTerminalsOrHonors) {
+        yakuList.push(SimpleYaky.HONROUTOU)
+    }
+
+    const theOnlyPossibleSuit = allTiles.find(x => x.type !== SuitType.JIHAI)?.type
+    if (theOnlyPossibleSuit !== undefined) {
+        const onlyOneSuit = allTiles.every(x => x.type === theOnlyPossibleSuit)
+        if (onlyOneSuit) {
+            yakuList.push(SimpleYaky.CHINITSU)
+        }
+
+        const onlyOneSuitAndHonors = allTiles.every(x => x.type === theOnlyPossibleSuit || x.type === SuitType.JIHAI)
+        if (onlyOneSuitAndHonors) {
+            yakuList.push(SimpleYaky.HONITSU)
+        }
+    }
+
+    return yakuList
+}
+
+export function getChiitoiYaku(allTiles: Tile[]): SimpleYaky[] | Yakuman {
+    if (isTsuuiisou(allTiles)) {
+        return Yakuman.TSUUIISOU
+    }
+
+    return getCommonSimpleYaky(allTiles)
 }
