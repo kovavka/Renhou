@@ -1,13 +1,14 @@
-import { MeldTileGroup, TwoTilesGroup } from '../hand/splitHand'
-import { SimpleYaky, Yakuman } from '../../core/game-types/Yaku'
-import { KanType, Meld, SetType } from '../../core/game-types/Meld'
-import { Tile } from '../../core/game-types/Tile'
-import { WaitPatternType } from '../../core/game-types/WaitPatternType'
-import { Wind } from '../../services/mahjong/state/Wind'
-import { SuitType } from '../../core/game-types/SuitType'
-import { isTheSameTile } from '../tiles/tileContains'
-import { getTileByWind } from '../tiles/getTileByWind'
-import { CHUN_VALUE, HAKU_VALUE, HANTSU_VALUE } from '../../core/consts/honors'
+import {MeldTileGroup, TwoTilesGroup} from '../hand/splitHand'
+import {SimpleYaky, Yakuman} from '../../core/game-types/Yaku'
+import {KanType, Meld, SetType} from '../../core/game-types/Meld'
+import {Tile} from '../../core/game-types/Tile'
+import {WaitPatternType} from '../../core/game-types/WaitPatternType'
+import {Wind} from '../../services/mahjong/state/Wind'
+import {SuitType} from '../../core/game-types/SuitType'
+import {isTheSameTile} from '../tiles/tileContains'
+import {getTileByWind} from '../tiles/getTileByWind'
+import {CHUN_VALUE, HAKU_VALUE, HANTSU_VALUE} from '../../core/consts/honors'
+import {isTerminal, isTerminalOrHonorTile} from "../tiles/isTerminalOrHonorTile";
 
 const ERROR_MESSAGE = 'Not a tempai'
 
@@ -232,6 +233,38 @@ function isPinfu(
     return sequences.length === 3 && waitPatternType === WaitPatternType.RYANMEN
 }
 
+function isChanta(
+    allMelds: MeldTileGroup[],
+    pairTile: Tile
+): boolean {
+    const notAllMeldsContainTerminalOrHonor = allMelds.some(x => {
+        const [tileA, tileB, tileC] = x
+        return !isTerminalOrHonorTile(tileA) && !isTerminalOrHonorTile(tileB) && !isTerminalOrHonorTile(tileC)
+    })
+
+    if (notAllMeldsContainTerminalOrHonor) {
+        return false
+    }
+
+    return isTerminalOrHonorTile(pairTile)
+}
+
+function isJunchan(
+    allMelds: MeldTileGroup[],
+    pairTile: Tile
+): boolean {
+    const notAllMeldsContainTerminal = allMelds.some(x => {
+        const [tileA, tileB, tileC] = x
+        return !isTerminal(tileA) && !isTerminal(tileB) && !isTerminal(tileC)
+    })
+
+    if (notAllMeldsContainTerminal) {
+        return false
+    }
+
+    return isTerminal(pairTile)
+}
+
 // const isOpenHand = openMelds.some(
 //     meld => meld.type !== SetType.KAN || meld.kanType !== KanType.CLOSED
 // )
@@ -255,6 +288,17 @@ export function getYakuByStructure(
     isOpenHand: boolean
 ): SimpleYaky[] | Yakuman {
     const yakuList: SimpleYaky[] = []
+
+    const allMelds: MeldTileGroup[] = sequences.concat(triplets)
+    openMelds.forEach(x => {
+        const [tileA, tileB] = x.fromHand
+        const tileC = x.type === SetType.CHII ? x.fromPlayers : Object.assign({}, tileB)
+
+        allMelds.push([tileA, tileB, tileC])
+    })
+    if (completedMeld !== undefined) {
+        allMelds.push(completedMeld)
+    }
 
     const closedTripletsNumber = getClosedTripletsNumber(triplets, openMelds)
     if (closedTripletsNumber === 4) {
@@ -303,11 +347,27 @@ export function getYakuByStructure(
         yakuList.push(SimpleYaky.TANYAO)
     }
 
-    const onlyTerminalsOrHonors = allTiles.every(
-        x => x.type === SuitType.JIHAI || x.value === 1 || x.value === 9
-    )
+    // TSUUIISOU and CHINROUTOU should be checked before
+    const onlyTerminalsOrHonors = allTiles.every(isTerminalOrHonorTile)
     if (onlyTerminalsOrHonors) {
         yakuList.push(SimpleYaky.HONROUTOU)
+    } else if (isJunchan(allMelds, finalPairTile)) {
+        yakuList.push(SimpleYaky.JUNCHAN)
+    } else if (isChanta(allMelds, finalPairTile)) {
+        yakuList.push(SimpleYaky.CHANTA)
+    }
+
+    const theOnlyPossibleSuit = allTiles.find(x => x.type !== SuitType.JIHAI)?.type
+    if (theOnlyPossibleSuit !== undefined) {
+        const onlyOneSuit = allTiles.every(x => x.type === theOnlyPossibleSuit)
+        if (onlyOneSuit) {
+            yakuList.push(SimpleYaky.CHINITSU)
+        }
+
+        const onlyOneSuitAndHonors = allTiles.every(x => x.type === theOnlyPossibleSuit || x.type === SuitType.JIHAI)
+        if (onlyOneSuitAndHonors) {
+            yakuList.push(SimpleYaky.HONITSU)
+        }
     }
 
     const chun = { value: CHUN_VALUE, type: SuitType.JIHAI }

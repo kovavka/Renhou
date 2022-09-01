@@ -1,17 +1,26 @@
 export enum Yakuman {
+    // situational
+    TENHOU,
+    CHIIHOU,
     KAZOE_YAKUMAN,
-    KOKUSHI_MUSOU,
+
+    // triplets based
+    SUUKANTSU,
     SUUANKOU,
+
+    // terminal/honor/simple based
     DAISANGEN,
     SHOUSIISHI,
     DAISUUSHII,
     TSUUIISOU,
     CHINROUTOU,
-    RYUUIISOU,
+
+    // suit based
     CHUUREN_POUTOU,
-    SUUKANTSU,
-    TENHOU,
-    CHIIHOU,
+    RYUUIISOU,
+
+    // odd structure
+    KOKUSHI_MUSOU,
 }
 
 export enum SimpleYaky {
@@ -43,8 +52,8 @@ export enum SimpleYaky {
     YAKUHAI_WIND,
     YAKUHAI_DRAGON,
     SHOSANGEN,
-    CHANTA,
     HONROUTOU,
+    CHANTA,
     JUNCHAN,
 
     // odd structure
